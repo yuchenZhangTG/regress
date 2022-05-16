@@ -1,0 +1,3 @@
+# select star, where condition | Yuchen Zhang | 5/16/2022
+use graph ldbc_snb
+select * from Company where name == "Kam_Air" 
