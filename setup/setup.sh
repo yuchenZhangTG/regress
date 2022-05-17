@@ -28,3 +28,4 @@ download_ldbc_snb_small () {
 
 download_ldbc_snb_small
 gsql setup.gsql
+gsql load.gsql

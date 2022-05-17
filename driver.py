@@ -11,7 +11,7 @@ output = Path('./output')
 def run_test(test_dir):
   test_dir = Path(test_dir)
   Qinstall = set(test_dir.glob('*.gsql'))
-  Qrun = set(test_dir.glob('run*'))
+  Qrun = set(test_dir.glob('run*.gsql'))
   Qinstall = Qinstall - Qrun
   
   # install queries
