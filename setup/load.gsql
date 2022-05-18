@@ -1,4 +1,5 @@
-
+USE GRAPH ldbc_snb
+SET sys.data_root="../data_set/ldbc_snb_data-small/social_network"
 CREATE LOADING JOB load_ldbc_snb {
   # load vertex
   LOAD "$sys.data_root/comment_0_0.csv" 
