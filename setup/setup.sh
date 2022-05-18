@@ -1,4 +1,5 @@
 #!/bin/bash
+pushd . > /dev/null
 
 download_and_extract () {
   remote_file_path="$1"
@@ -26,6 +27,9 @@ download_ldbc_snb_small () {
   fi
 }
 
+cd "$( cd "$( dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" >/dev/null 2>&1 && pwd )"
 download_ldbc_snb_small
 gsql setup.gsql
 gsql load.gsql
+
+popd > /dev/null

@@ -1,0 +1,27 @@
+# migrated from gle/regress/test_case/gsql/gquery/regress804/test455.gsql
+CREATE OR REPLACE QUERY lMapAccum101 () {
+  SetAccum<VERTEX> @set;
+  MapAccum<INT, SetAccum<VERTEX>> @map;
+  T1 = SELECT s
+    FROM (Country|Continent):s
+    ACCUM
+      s.@map += (1 -> s.neighbors())
+    POST-ACCUM
+      FOREACH a IN s.@map.get(1) DO s.@set += a  END;
+  PRINT T1;
+}
+
+# migrated from gle/regress/test_case/gsql/gquery/regress804/test456.gsql
+CREATE OR REPLACE QUERY lMapAccum102 () {
+  SetAccum<VERTEX> @set;
+  MapAccum<int, SetAccum<VERTEX>> @map;
+
+  T1 = SELECT s
+  FROM (Country|Continent):s
+  ACCUM 
+    s.@map += (1 -> s.neighbors())
+  POST-ACCUM 
+    FOREACH a IN s.@map.get(1) DO s.@set += a  END;
+     
+  PRINT T1;
+}

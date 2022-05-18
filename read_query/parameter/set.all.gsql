@@ -1,0 +1,7 @@
+
+# migrated from gle/regress/test_case/gsql/gquery/regress804/test458.gsql
+CREATE OR REPLACE QUERY pSet101 (set<vertex> aaa,set<vertex> bbb)
+{
+   PRINT aaa;
+   PRINT bbb;
+}
