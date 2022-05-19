@@ -11,16 +11,16 @@ CREATE OR REPLACE QUERY gSetAccum101 () {
   SetAccum<VERTEX> @@setE;
   SetAccum<VERTEX> @@setF;
 
-  L1 = SELECT s FROM Person:s
-     WHERE s.firstName == "John" AND s.lastName == "Reddy"
+  L1 = SELECT s FROM Comment:s
+     WHERE s.id == 618475290625
      ACCUM @@set1 += s;
        
-  L1 = SELECT s FROM Person:s
-     WHERE s.gender == "male"
+  L1 = SELECT s FROM Country:s
+     WHERE s.id < 10
      ACCUM @@set1 += s;
-        
-  L1 = SELECT s FROM Person:s
-     WHERE s.firstName == "John" AND s.lastName == "Reddy"
+
+  L1 = SELECT s FROM Comment:s
+     WHERE s.id == 618475290625
      ACCUM
        @@set += s.neighbors(),
        @@setA += @@set1 MINUS s.neighbors(),

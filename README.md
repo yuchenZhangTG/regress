@@ -11,3 +11,5 @@ To run test
 | ------------- | ------------- |
 | end2end/gquery/regress1  | read_query/buildIn/selectStar  |
 | end2end/gquery/regress804  | read/e2e/select1  |
+
+regress44

@@ -1,5 +1,5 @@
 # migrated from gle/regress/test_case/gsql/gquery/regress804/test457.gsql
-CREATE OR REPLACE QUERY gBagAccum (SET<INT> set1, BAG<INT> set2) {
+CREATE OR REPLACE QUERY gBagAccum101(SET<INT> set1, BAG<INT> set2) {
    SetAccum<int> @@set;
    BagAccum<int> @@bag;
    

@@ -29,7 +29,8 @@ download_ldbc_snb_small () {
 
 cd "$( cd "$( dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" >/dev/null 2>&1 && pwd )"
 download_ldbc_snb_small
-gsql setup.gsql
+gsql drop all
+gsql schema.gsql
 gsql load.gsql
 
 popd > /dev/null
