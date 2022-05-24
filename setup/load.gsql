@@ -1,7 +1,8 @@
 USE GRAPH test_graph
 SET sys.data_root="./data_set/ldbc_snb_data-small/social_network"
+DROP JOB load_ldbc_snb
 CREATE LOADING JOB load_ldbc_snb {
-  # load vertex
+  # load vertex for original LDBC
   LOAD "$sys.data_root/comment_0_0.csv" 
     TO VERTEX Comment VALUES ($0, $1, $2, $3, $4, $5) USING header="true", separator="|";
   LOAD "$sys.data_root/post_0_0.csv"
@@ -21,6 +22,21 @@ CREATE LOADING JOB load_ldbc_snb {
     TO VERTEX Tag VALUES ($0, $1, $2) USING header="true", separator="|";
   LOAD "$sys.data_root/tagclass_0_0.csv"
     TO VERTEX TagClass VALUES ($0, $1, $2) USING header="true", separator="|";
+  # extended data type coverage 
+  LOAD "$sys.data_root/person_0_0.csv"
+    TO VERTEX tuplePerson VALUES ($0, TUP($0, $0, $4), TUP2($0, $0, $1)) USING header="true", separator="|";
+  LOAD "$sys.data_root/person_0_0.csv"
+    TO VERTEX outdegreePerson VALUES ($0, $0) USING header="true", separator="|";
+  LOAD "$sys.data_root/person_0_0.csv"
+    TO VERTEX compositePerson VALUES ($1, $2, $4, SPLIT($8,";")) USING header="true", separator="|";
+  LOAD "$sys.data_root/forum_0_0.csv"
+    TO VERTEX compositeForum VALUES ($0, $1, $2) USING header="true", separator="|";
+  LOAD "./listV.csv"
+    TO VERTEX listV VALUES ($0, $1, $2, $3, $4, TUP($1,$2,$3), TUP2($0,$1,$4)) USING header="true", separator="|";
+  LOAD "./listV.csv"
+    TO VERTEX setV VALUES ($0, $1, $2, $3, $4, TUP($1,$2,$3), TUP2($0,$1,$4)) USING header="true", separator="|";
+  LOAD "./listV.csv"
+    TO VERTEX mapV VALUES ($0, ($3->$4), ($4->$4), ($1->TUP($1,$2,$3)), ($1->TUP2($0,$1,$4))) USING header="true", separator="|";
 
   # load edge
   LOAD "$sys.data_root/forum_containerOf_post_0_0.csv"

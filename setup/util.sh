@@ -12,11 +12,8 @@ cdtest() {
   cd $dir
 }
 
-# After 'gadmin start' done, GSQL#1 may be in WARMUP status, this may
-# cause connection failure in tests.
+# After 'gadmin start' done, GSQL#1 may be in WARMUP status, wait until gsql is up
 wait_until_gsql_up () {
-  # use gsql -v to check whether gsql is ready in order to avoid unexpected gsql slow startup
-  # just like we did in gsql_server_util in 2.x
   local NUM_RETRY=0
   local RETRY_MAX=10
   echo "[GTEST_IB]"
@@ -38,10 +35,23 @@ wait_until_gsql_up () {
   echo "[GTEST_IE]"
 }
 
+# check statistics of vertices and edges
+check_stat() {
+  echo "Wait for the database to rebuild delta..."
+  curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow" > /dev/null
+  echo "Vertex statistics:"
+  curl -X POST "http://127.0.0.1:9000/builtins/test_graph" -d  '{"function":"stat_vertex_number","type":"*"}'
+  echo
+  echo
+  echo "Edge statistics:"
+  curl -X POST "http://127.0.0.1:9000/builtins/test_graph" -d  '{"function":"stat_edge_number","type":"*"}'
+  echo
+}
+
 echoTitle() {
-  echo '=============='
+  echo '======================='
   echo $1
-  echo '=============='
+  echo '======================='
 }
 
 popd > /dev/null

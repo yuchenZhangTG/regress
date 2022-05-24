@@ -1,3 +1,4 @@
+DROP ALL
 # ======== Original LDBC SNB v2 ==================
 CREATE VERTEX Comment (PRIMARY_ID id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE", STATS="outdegree_by_edgetype"
 CREATE VERTEX Post (PRIMARY_ID id UINT, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, lang STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
@@ -26,27 +27,24 @@ CREATE DIRECTED EDGE REPLY_OF (FROM Comment, TO Comment|Post) WITH REVERSE_EDGE=
 CREATE DIRECTED EDGE STUDY_AT (FROM Person, TO University, classYear INT) WITH REVERSE_EDGE="STUDY_AT_REVERSE"
 CREATE DIRECTED EDGE WORK_AT (FROM Person, TO Company, workFrom INT) WITH REVERSE_EDGE="WORK_AT_REVERSE"
 
-# ======== Data Type Coverage ==================
-USE GLOBAL
-TYPEDEF TUPLE <i1 INT, s1 STRING, d1 DATETIME> TUP
-TYPEDEF TUPLE <i1 UINT, f1 FLOAT, d1 DOUBLE> TUP2
-TYPEDEF TUPLE <i1 UINT(4), s1 STRING(10)> TUP3
+# ======== Extended Data Type Coverage ==================
+# Refer to https://docs.tigergraph.com/gsql-ref/current/ddl-and-loading/system-and-language-basics
+TYPEDEF TUPLE <i INT, d DOUBLE, dt DATETIME> TUP
+TYPEDEF TUPLE <i UINT(8), i2 INT(8), s STRING(10)> TUP2
 
-CREATE VERTEX tuplePerson (PRIMARY_ID id STRING, tup2 TUP2, tup3 TUP3) WITH primary_id_as_attribute="FALSE"
-CREATE VERTEX fixedLenPerson (id STRING PRIMARY KEY, fb FIXED_BINARY(10)) WITH STATS="outdegree_by_edgetype"
-CREATE VERTEX indexPerson (id STRING PRIMARY KEY, i1 UINT, i2 INT, dt DATETIME, str STRING)
-CREATE VERTEX compositePerson (id UINT, name STRING, PRIMARY KEY (name, id))
-CREATE VERTEX compositeForum (id UINT, title STRING, creationDate INT, PRIMARY KEY (id, title, creationDate))
-CREATE DIRECTED EDGE HAS_MEMBER2 (FROM compositeForum, TO compositePerson, joinDate DATETIME) WITH REVERSE_EDGE="HAS_MEMBER_REVERSE2"
-CREATE UNDIRECTED EDGE HAS_MEMBER3 (FROM Forum, TO compositePerson, joinDate DATETIME)
+CREATE VERTEX tuplePerson (PRIMARY_ID id STRING, tup TUP, tup2 TUP2) WITH primary_id_as_attribute="FALSE"
+CREATE VERTEX outdegreePerson (id STRING PRIMARY KEY, fb FIXED_BINARY(32)) WITH STATS="outdegree_by_edgetype"
+CREATE VERTEX compositePerson (firstName STRING, lastName STRING, birthday DATETIME, speaks set<STRING>, PRIMARY KEY (firstName, lastName, birthday))
+CREATE VERTEX compositeForum (id UINT, title STRING, creationDate DATETIME, PRIMARY KEY (id, title, creationDate))
+CREATE UNDIRECTED EDGE HAS_MEMBER2 (FROM Forum, TO compositePerson, joinDate DATETIME)
+CREATE DIRECTED EDGE HAS_MEMBER3 (FROM compositeForum, TO compositePerson, joinDate DATETIME)
 
-# variable length UTD not supported in attributes
-CREATE VERTEX listV(id UINT PRIMARY KEY, creationDate DATETIME, intList LIST<INT>, dtList LIST<DATETIME>, sList LIST<STRING>, tupSet1 LIST<TUP2>, tupSet2 LIST<TUP3>)
-CREATE VERTEX setV(id UINT PRIMARY KEY, id2 STRING, intSet SET<INT>, dtSet SET<DATETIME>, sSet SET<STRING>, tupSet1 SET<TUP2>, tupSet2 SET<TUP3>)
-CREATE VERTEX mapV(id UINT PRIMARY KEY, map1 MAP<DATETIME,STRING>, map2 MAP<STRING,STRING>, map3 MAP<INT,TUP2>, map4 MAP<INT,TUP3>)
-CREATE DIRECTED EDGE listE(FROM listV|setV|mapV, TO listV|setV|mapV, intList LIST<INT>, dtList LIST<DATETIME>, sList LIST<STRING>, tupSet1 LIST<TUP2>, tupSet2 LIST<TUP3>)
-CREATE DIRECTED EDGE setE(FROM listV|setV|mapV, TO listV|setV|mapV, intSet SET<INT>, dtSet SET<DATETIME>, sSet SET<STRING>, tupSet1 SET<TUP2>, tupSet2 SET<TUP3>)
-CREATE UNDIRECTED EDGE mapE(FROM listV|setV|mapV, TO listV|setV|mapV, map1 MAP<DATETIME,STRING>, map2 MAP<STRING,STRING>, map3 MAP<INT,TUP2>, map4 MAP<INT,TUP3>)
+CREATE VERTEX listV(id UINT PRIMARY KEY, intList LIST<INT>, dbList LIST<DOUBLE>, dtList LIST<DATETIME>, sList LIST<STRING>, tupList1 LIST<TUP>, tupList2 LIST<TUP2>)
+CREATE VERTEX setV(id UINT PRIMARY KEY, intSet SET<INT>, dbSet SET<DOUBLE>, dtSet SET<DATETIME>, sSet SET<STRING>, tupSet1 SET<TUP>, tupSet2 SET<TUP2>)
+CREATE VERTEX mapV(id UINT PRIMARY KEY, map1 MAP<DATETIME,STRING>, map2 MAP<STRING,STRING>, map3 MAP<INT,TUP>, map4 MAP<INT,TUP2>)
+CREATE DIRECTED EDGE listE(FROM listV|setV, TO listV|setV, intList LIST<INT>, dbList LIST<DOUBLE>, dtList LIST<DATETIME>, sList LIST<STRING>, tupSet1 LIST<TUP>, tupSet2 LIST<TUP2>)
+CREATE DIRECTED EDGE setE(FROM listV|setV, TO listV|setV, intSet SET<INT>, dbSet SET<DOUBLE>, dtSet SET<DATETIME>, sSet SET<STRING>, tupSet1 SET<TUP>, tupSet2 SET<TUP2>)
+CREATE UNDIRECTED EDGE mapE(FROM listV|setV|mapV, TO listV|setV|mapV, map1 MAP<DATETIME,STRING>, map2 MAP<STRING,STRING>, map3 MAP<INT,TUP>, map4 MAP<INT,TUP2>)
 
 CREATE GLOBAL SCHEMA_CHANGE JOB addIndex {
   ALTER VERTEX Country ADD INDEX country_name ON (name);
@@ -54,10 +52,6 @@ CREATE GLOBAL SCHEMA_CHANGE JOB addIndex {
   ALTER VERTEX University ADD INDEX university_name ON (name);
   ALTER VERTEX Tag ADD INDEX tag_name ON (name);
   ALTER VERTEX TagClass ADD INDEX tagclass_name ON (name);
-  ALTER VERTEX indexPerson ADD INDEX uint_idx ON (i1);
-  ALTER VERTEX indexPerson ADD INDEX int_idx ON (i2);
-  ALTER VERTEX indexPerson ADD INDEX dt_idx ON (dt);
-  ALTER VERTEX indexPerson ADD INDEX str_idx ON (str);
 }
 
 RUN GLOBAL SCHEMA_CHANGE JOB addIndex
