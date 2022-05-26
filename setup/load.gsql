@@ -27,13 +27,11 @@ CREATE LOADING JOB load_ldbc_snb {
   LOAD "$sys.data_root/person_0_0.csv"
     TO VERTEX tuplePerson VALUES ($0, TUP($0, $0, $4), TUP2($0, $0, $1)) USING header="true", separator="|";
   LOAD "$sys.data_root/person_0_0.csv"
-    TO VERTEX outdegreePerson VALUES ($0, $0) USING header="true", separator="|";
-  LOAD "$sys.data_root/person_0_0.csv"
     TO VERTEX compositePerson VALUES ($1, $2, $4, SPLIT($8,";")) USING header="true", separator="|";
   LOAD "$sys.data_root/forum_0_0.csv"
     TO VERTEX compositeForum VALUES ($0, $1, $2) USING header="true", separator="|";
   LOAD "./listV.csv"
-    TO VERTEX listV VALUES ($0, $1, $2, $3, $4, TUP($1,$2,$3), TUP2($0,$1,$4)) USING header="true", separator="|";
+    TO VERTEX listV VALUES ($0, $1, $2, $3, $4, TUP($1,$2,$3), TUP2($0,$1,$4), $5) USING header="true", separator="|";
   LOAD "./listV.csv"
     TO VERTEX setV VALUES ($0, $1, $2, $3, $4, TUP($1,$2,$3), TUP2($0,$1,$4)) USING header="true", separator="|";
   LOAD "./listV.csv"
@@ -92,7 +90,7 @@ CREATE LOADING JOB load_ldbc_snb {
   LOAD "./hasMember.csv"
     TO EDGE HAS_MEMBER2 VALUES (($0, $1, $2), ($4, $5, $6), $7) USING header="true", separator="|";
   LOAD "./listE.csv"
-    TO EDGE listE VALUES ($0, $1, $2, $3, $4, $5, TUP($2,$3,$4), TUP2($1,$2,$5)) USING header="true", separator="|";
+    TO EDGE listE VALUES ($0, $1, $2, $3, $4, $5, TUP($2,$3,$4), TUP2($1,$2,$5), $6) USING header="true", separator="|";
   LOAD "./listE.csv"
     TO EDGE setE VALUES ($0, $1, $2, $3, $4, $5, TUP($2,$3,$4), TUP2($1,$2,$5)) USING header="true", separator="|";
   LOAD "./listE.csv"

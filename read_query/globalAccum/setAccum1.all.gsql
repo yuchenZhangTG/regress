@@ -1,46 +1,30 @@
 # migrated from gle/regress/test_case/gsql/gquery/regress804/test453.gsql 
 CREATE OR REPLACE QUERY gSetAccum101 () {
-  SetAccum<VERTEX> @@set1;
-  SetAccum<VERTEX> @@set2;
-  SetAccum<VERTEX> @@set;
+  SetAccum<VERTEX> @@setVertex;
+  SetAccum<EDGE>   @@setEDGE;
+  SetAccum<INT>        @@setInt;
+  SetAccum<UINT>       @@setUint;
+  SetAccum<DOUBLE>     @@setDouble;
+  SetAccum<DATETIME>   @@setDateime;
+  SetAccum<TUP>   @@setTup;
+  SetAccum<TUP2>  @@setTup2;
 
-  SetAccum<VERTEX> @@setA;
-  SetAccum<VERTEX> @@setB;
-  SetAccum<VERTEX> @@setC;
-  SetAccum<VERTEX> @@setD;
-  SetAccum<VERTEX> @@setE;
-  SetAccum<VERTEX> @@setF;
+  L1 = SELECT s FROM Person:s
+     WHERE s.creationDate < datetime_to_epoch("2010-01-02")
+     ACCUM 
+      @@setVertex += s,
+      @@setInt += s.id,
+      @@setUint += s.id,
+      @@setDouble += s.id * 1.0 / 17,
+      @@setDateime += s.birthday
+      @@setDateime += TUP();
 
-  L1 = SELECT s FROM Comment:s
-     WHERE s.id == 618475290625
-     ACCUM @@set1 += s;
-       
-  L1 = SELECT s FROM Country:s
-     WHERE s.id < 10
-     ACCUM @@set1 += s;
-
-  L1 = SELECT s FROM Comment:s
-     WHERE s.id == 618475290625
-     ACCUM
-       @@set += s.neighbors(),
-       @@setA += @@set1 MINUS s.neighbors(),
-       @@setB += @@set1 INTERSECT s.neighbors(),
-       @@setC += @@set1 UNION s.neighbors(),
-       @@setD += s.neighbors() MINUS @@set1,
-       @@setE += s.neighbors() INTERSECT @@set1,
-       @@setF += s.neighbors() UNION @@set1;
-
-   PRINT @@set1;
-   PRINT @@set2;
-   PRINT @@set1 UNION @@set2;
-   PRINT @@set2 INTERSECT @@set1;
-   PRINT @@set2 MINUS @@set1;
-   
-   PRINT @@set;
-   PRINT @@setA;
-   PRINT @@setB;
-   PRINT @@setC;
-   PRINT @@setD;
-   PRINT @@setE;
-   PRINT @@setF;
+  PRINT @@setVertex;
+  PRINT @@setEDGE;
+  PRINT @@setInt;
+  PRINT @@setUint;
+  PRINT @@setDouble;
+  PRINT @@setDateime;
+  PRINT @@setTup;
+  PRINT @@setTup2;
 }

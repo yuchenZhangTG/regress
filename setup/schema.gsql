@@ -1,5 +1,6 @@
 DROP ALL
 # ======== Original LDBC SNB v2 ==================
+# Note: outdegree_by_edgetype is turned on for Comment and Person
 CREATE VERTEX Comment (PRIMARY_ID id UINT, creationDate DATETIME, locationIP STRING, browserUsed STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE", STATS="outdegree_by_edgetype"
 CREATE VERTEX Post (PRIMARY_ID id UINT, imageFile STRING, creationDate DATETIME, locationIP STRING, browserUsed STRING, lang STRING, content STRING, length UINT) WITH primary_id_as_attribute="TRUE"
 CREATE VERTEX Company (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
@@ -8,7 +9,7 @@ CREATE VERTEX City (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id
 CREATE VERTEX Country (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 CREATE VERTEX Continent (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 CREATE VERTEX Forum (PRIMARY_ID id UINT, title STRING, creationDate DATETIME) WITH primary_id_as_attribute="TRUE"
-CREATE VERTEX Person (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, speaks set<STRING>, email set<STRING>) WITH primary_id_as_attribute="TRUE"
+CREATE VERTEX Person (PRIMARY_ID id UINT, firstName STRING, lastName STRING, gender STRING, birthday DATETIME, creationDate DATETIME, locationIP STRING, browserUsed STRING, speaks set<STRING>, email set<STRING>) WITH primary_id_as_attribute="TRUE", STATS="outdegree_by_edgetype"
 CREATE VERTEX Tag (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 CREATE VERTEX TagClass (PRIMARY_ID id UINT, name STRING, url STRING) WITH primary_id_as_attribute="TRUE"
 CREATE DIRECTED EDGE CONTAINER_OF (FROM Forum, TO Post) WITH REVERSE_EDGE="CONTAINER_OF_REVERSE"
@@ -33,15 +34,14 @@ TYPEDEF TUPLE <i INT, d DOUBLE, dt DATETIME> TUP
 TYPEDEF TUPLE <i UINT(8), i2 INT(8), s STRING(10)> TUP2
 
 CREATE VERTEX tuplePerson (PRIMARY_ID id STRING, tup TUP, tup2 TUP2) WITH primary_id_as_attribute="FALSE"
-CREATE VERTEX outdegreePerson (id STRING PRIMARY KEY, fb FIXED_BINARY(32)) WITH STATS="outdegree_by_edgetype"
 CREATE VERTEX compositePerson (firstName STRING, lastName STRING, birthday DATETIME, speaks set<STRING>, PRIMARY KEY (firstName, lastName, birthday))
 CREATE VERTEX compositeForum (id UINT, title STRING, creationDate DATETIME, PRIMARY KEY (id, title, creationDate))
 CREATE DIRECTED EDGE HAS_MEMBER2 (FROM compositeForum, TO compositePerson, joinDate DATETIME)
 
-CREATE VERTEX listV(id UINT PRIMARY KEY, intList LIST<INT>, dbList LIST<DOUBLE>, dtList LIST<DATETIME>, sList LIST<STRING>, tupList1 LIST<TUP>, tupList2 LIST<TUP2>)
+CREATE VERTEX listV(id UINT PRIMARY KEY, intList LIST<INT>, dbList LIST<DOUBLE>, dtList LIST<DATETIME>, sList LIST<STRING>, tupList1 LIST<TUP>, tupList2 LIST<TUP2>, fb4 FIXED_BINARY(4))
 CREATE VERTEX setV(id UINT PRIMARY KEY, intSet SET<INT>, dbSet SET<DOUBLE>, dtSet SET<DATETIME>, sSet SET<STRING>, tupSet1 SET<TUP>, tupSet2 SET<TUP2>)
 CREATE VERTEX mapV(id UINT PRIMARY KEY, map1 MAP<DATETIME,STRING>, map2 MAP<STRING,STRING>, map3 MAP<INT,TUP>, map4 MAP<INT,TUP2>)
-CREATE DIRECTED EDGE listE(FROM listV, TO listV, intList LIST<INT>, dbList LIST<DOUBLE>, dtList LIST<DATETIME>, sList LIST<STRING>, tupSet1 LIST<TUP>, tupSet2 LIST<TUP2>)
+CREATE DIRECTED EDGE listE(FROM listV, TO listV, intList LIST<INT>, dbList LIST<DOUBLE>, dtList LIST<DATETIME>, sList LIST<STRING>, tupSet1 LIST<TUP>, tupSet2 LIST<TUP2>, fb4 FIXED_BINARY(4))
 CREATE DIRECTED EDGE setE(FROM setV, TO setV, intSet SET<INT>, dbSet SET<DOUBLE>, dtSet SET<DATETIME>, sSet SET<STRING>, tupSet1 SET<TUP>, tupSet2 SET<TUP2>)
 CREATE UNDIRECTED EDGE mapE(FROM mapV, TO mapV, map1 MAP<DATETIME,STRING>, map2 MAP<STRING,STRING>, map3 MAP<INT,TUP>, map4 MAP<INT,TUP2>)
 
