@@ -22,10 +22,13 @@
         ```sh
         ./driver.py all
         ```
-    * Other usage
-        * `-s` or `--skip` to skip parse and install, only run queries.
-        * `-m [mode]` to run only one mode
+Other usages of `./driver.py`    
+* `--skip` or `-s` to skip parse and install, only run queries.
+* `--mode [mode]` or `-m [mode]` to run only one mode.
+* `--query [file name]` or `-q [file name]` to run only one mode.
+* `--info` or `-i` print results to terminal not to log file.
 
+For example, I use  `./driver.py vSetAssign1 -sim udf` to debug my tests.
 
 ## Test case guidelines
 1. test cases are located in `/*categories*/[test folder]/[query_name].gsql`, test folder name must be unique across different categories
