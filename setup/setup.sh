@@ -28,8 +28,27 @@ download_ldbc_snb_small () {
 }
 
 cd "$( cd "$( dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" >/dev/null 2>&1 && pwd )"
-download_ldbc_snb_small
+echo '=============================='
+echo 'Pre-set configurations'
+echo '=============================='
+gadmin config set GSQL.BasicConfig.LogConfig.LogLevel debug
+gadmin config set RESTPP.Factory.DefaultQueryTimeoutSec 600
+gadmin config apply -y
+
+echo '=============================='
+echo 'Set up Schema'
+echo '=============================='
 gsql schema.gsql
+
+echo '=============================='
+echo 'Load data'
+echo '=============================='
+download_ldbc_snb_small
 gsql load.gsql
 
+echo '=============================='
+echo 'User defined Functions'
+echo '=============================='
+gsql PUT TokenBank FROM \"$(pwd)/TokenBank.cpp\"
+gsql PUT ExprFunctions FROM \"$(pwd)/ExprFunctions.hpp\"
 popd > /dev/null

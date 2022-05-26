@@ -1,0 +1,62 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/select-statement/select-statement-v1
+CREATE OR REPLACE QUERY AccumClause1_SetAccum101 (datetime date) {
+  SetAccum<VERTEX> @@setVertex;
+  SetAccum<INT>    @@setInt;
+  SetAccum<UINT>   @@setUint;
+  SetAccum<DOUBLE> @@setDouble;
+  SetAccum<DATETIME> @@setDateime;
+  SetAccum<TUP>   @@setTup;
+  SetAccum<TUP2>  @@setTup2;
+
+  S = SELECT s FROM tupPerson:s
+     WHERE s.creationDate < date
+     ACCUM
+      @@setVertex += s,
+      @@setInt += s.creationEpoch,
+      @@setUint += s.creationEpoch,
+      @@setDouble += s.creationEpoch * 1.0 / 21,
+      @@setDateime += s.creationDate,
+      @@setTup += s.tup,
+      @@setTup2 += s.tup2;
+
+  PRINT @@setVertex;
+  PRINT @@setInt;
+  PRINT @@setUint;
+  PRINT @@setDouble;
+  PRINT @@setDateime;
+  PRINT @@setTup;
+  PRINT @@setTup2;
+}
+
+CREATE OR REPLACE QUERY AccumClause1_SetAccum102 (DATETIME date) {
+  SetAccum<VERTEX> @@setVertex;
+  SetAccum<EDGE> @@setEdge;
+  SetAccum<INT>    @@setInt;
+  SetAccum<UINT>   @@setUint;
+  SetAccum<DOUBLE> @@setDouble;
+  SetAccum<DATETIME> @@setDateime;
+  SetAccum<TUP>   @@setTup;
+  SetAccum<TUP2>  @@setTup2;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate < to_datetime(date)
+    # GLE-3372 - The second statement does not work
+    # WHERE s.creationDate < to_datetime("2010-01-02") AND e.creationDate < to_datetime("2010-01-02") 
+    ACCUM
+      @@setVertex += s,
+      @@setEdge += e,
+      @@setInt += e.creationEpoch,
+      @@setUint += e.creationEpoch,
+      @@setDouble += e.creationEpoch * 1.0 / 21,
+      @@setDateime += e.creationDate,
+      @@setTup += e.tup,
+      @@setTup2 += e.tup2;
+
+  PRINT @@setVertex;
+  PRINT @@setInt;
+  PRINT @@setUint;
+  PRINT @@setDouble;
+  PRINT @@setDateime;
+  PRINT @@setTup;
+  PRINT @@setTup2;
+}

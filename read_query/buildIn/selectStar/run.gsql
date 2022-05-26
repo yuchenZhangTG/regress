@@ -1,3 +1,0 @@
-select * from Comment where id == 618475290625
-select * from Comment where locationIP == "46.16.217.105"
-select * from Tag where name == "Abbas_I_of_Persia"
