@@ -225,7 +225,7 @@ def runTest(mode, query):
     filesInstall.append(Path(query))
     filesRun.append(Path(query.replace('.gsql','.run')))
   else:
-    for f in Path('./').glob('**/*.gsql'):
+    for f in Path('./').glob('**/*'):
       filterFiles(f, mode, filesInstall, filesRun)
   
   if not args.skip:
