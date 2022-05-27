@@ -15,6 +15,7 @@ parser.add_argument('--skip', '-s', action='store_true', help='skip parse and pr
 parser.add_argument('--info', '-i', action='store_true', help='info mode, print output to terminal not log file')
 parser.add_argument('--real', '-r', action='store_true', help='show difference in realtime')
 parser.add_argument('--time', '-t', action='store_true', help='print parse, install and run time')
+parser.add_argument('--update', '-u', action='store_true', help='force update baselines')
 parser.add_argument('--mode', '-m', type=str, choices = ['udf', 'single', 'dist', 'all'], default = 'all', help='skip parse and precompile')
 
 args = parser.parse_args()
@@ -30,7 +31,7 @@ def check(test_dir):
   # check the uniqueness of the query name
   pass
 
-def relative(file):
+def relative(file: Path):
   return file.relative_to(root)
 
 def getFiles(f, mode, filesInstall, filesRun):
@@ -57,6 +58,63 @@ def parse_dist(file):
         )
   subprocess.run(["gsql", "-g", "test_graph", str(tmp_file)])
 
+"""
+================ JSON sorter =======================
+Json -> list & tuples -> sorted tuples -> Json
+====================================================
+"""  
+def json_to_tupList(x):
+  if type(x) is dict:
+    return ('__DICT__', [(k,json_to_tupList(v)) for k,v in x.items()])
+  elif type(x) is list:
+    return ('__LIST__',[json_to_tupList(v) for v in x])
+  else:
+    return x
+
+def sort_tupleList(x):
+  if type(x) is list:
+    mylist = [sort_tupleList(v) for v in x]
+    mylist.sort()
+    return tuple(mylist)
+  elif type(x) is tuple and len(x)==2:
+    if x[0] == '__DICT__':
+      mylist = [(k,sort_tupleList(v)) for k,v in x[1]]
+      mylist.sort()
+      return (x[0],tuple(mylist))
+    elif x[0] == '__LIST__':
+      mylist = [sort_tupleList(v) for v in x[1]]
+      mylist.sort()
+      return (x[0],tuple(mylist))
+  return x
+
+def decode_tupleList(x):
+  if type(x) is tuple and len(x) == 2:
+    if x[0] == '__LIST__':
+      x = [decode_tupleList(v) for v in x[1]]
+    if x[0] == '__DICT__':
+      x = {k:decode_tupleList(v) for k,v in x[1]}
+  return x
+
+def sort_json(json_str):
+  json_dict = json.loads(json_str)
+  if not json_dict['error']:
+    rows = []
+    for row in json_dict['results']:
+      if type(row) is dict:
+        for k,v in row.items():
+          tupleList = json_to_tupList(v)
+          sorted_tuple = sort_tupleList(tupleList)
+          sorted_json = decode_tupleList(sorted_tuple)
+          rows.append(f'{k}:{sorted_json}')
+    return '\n'.join(rows)
+  else:
+    return json_dict['message']
+
+"""
+================ GSQL file handlers =======================
+Parse, install, run,
+===========================================================
+"""
 def parse(file):
   print(f'-- {file}')
   subprocess.run(["gsql", "-g", "test_graph", str(file)])
@@ -76,57 +134,6 @@ def installQueries(mode):
     subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -SINGLE ALL"])
   else:
     subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
-  
-def json_to_tupList(json_dict):
-  if type(json_dict) is dict:
-    return [(k,json_to_tupList(v)) for k,v in json_dict.items()]
-  elif type(json_dict) is list:
-    return [json_to_tupList(v) for v in json_dict]
-  else:
-    return json_dict
-
-def sort_tupleList(tupleList):
-  if type(tupleList) is list: 
-    mylist = [sort_tupleList(v) for v in tupleList]
-    mylist.sort()
-    return tuple(mylist)
-  else:
-    return tupleList
-
-def sort_json(json_str):
-  json_dict = json.loads(json_str)
-  if not json_dict['error']:
-    rows = []
-    for row in json_dict['results']:
-      if type(row) is dict:
-        for k,v in row.items():
-          tupleList = json_to_tupList(v)
-          sorted_tuple= sort_tupleList(tupleList)
-          rows.append(f'{k}:{sorted_tuple}')
-    return '\n'.join(rows)
-  else:
-    return json_dict['message']
-
-"""
-def dump_vset(json_dict):
-  for k,v in json_dict.items():
-    v.sort(key=lambda x: (x['v_type'],x['v_id'])) # vertex ids are sorted in alphebatic order
-    return k + ':' + json.dumps(v, sort_keys=True)
-
-def sort_json(json_str):
-  json_dict = json.loads(json_str)
-  if not json_dict['error']:
-    rows = []
-    for row in json_dict['results']:
-      # If result is a Vertex Set
-      if '"attributes"' in json_str and '"v_id"' in json_str and '"v_type"' in json_str:
-        rows.append(dump_vset(row))
-      else:
-        rows.append(json.dumps(row, sort_keys=True))
-    return '\n'.join(rows)
-  else:
-    return json_dict['message']
-"""
 
 def getOutputFile(file):
   file = file.resolve()
@@ -153,11 +160,11 @@ def runQuery(file, mode):
       if cmd_out.startswith('{'):
         cmd_out = sort_json(cmd_out)
       if args.info:
-        print(line, end='')
-        print(cmd_out)
+        print(line.rstrip('\n'))
+        print(cmd_out.rstrip('\n')+'\n')
       else:
-        fo.write(line.strip()+'\n')
-        fo.write(cmd_out.strip()+'\n\n')
+        fo.write(line.rstrip('\n'))
+        fo.write(cmd_out.rstrip('\n')+'\n')
   if args.info:
     return  
   fo.close()
@@ -175,13 +182,18 @@ def compare(output_file, baseline_file):
   cmd_out = subprocess.run(["diff", str(output_file), str(baseline_file)], stdout=subprocess.PIPE)
   r1 = relative(output_file)
   r2 = relative(baseline_file)
-  if cmd_out.returncode:
-    print(f'Wrong results in {r1}')
-    print(f'To compare:')
-    print(f'    vi -d {r1} {r2}')
-    print(f'To update:')
-    print(f'    cp {r1} {r2}')
-    print()
+  if cmd_out.returncode == 0:
+    return cmd_out.returncode
+  if args.update:
+    shutil.copy(output_file, baseline_file)
+    print(f'Updated {r2}')
+    return cmd_out.returncode
+  print(f'Wrong results in {r1}')
+  print(f'To compare:')
+  print(f'    vi -d {r1} {r2}')
+  print(f'To update:')
+  print(f'    cp {r1} {r2}')
+  print()
   return cmd_out.returncode
 
 def compare_files(file_list):
@@ -224,6 +236,12 @@ def runTest(mode):
       print(f'Install: {install_time:.3f} s')
     print(f'Run:     {run_time:.3f} s')
 
+"""
+================ Main Program =======================
+./driver.py read_query
+./driver.py test_case
+===========================================================
+"""
 os.chdir(root)
 tests = glob(f'test_case/**/{args.test}', recursive=True) 
 print('Tests to run:')
