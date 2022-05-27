@@ -9,8 +9,8 @@
     ```sh
     setup/setup.sh
     ``` 
-1. Use to driver to
-    * Any category of tests
+1. Use the driver to
+    * Run any category of tests
         ```sh
         ./driver.py read_query
         ./driver.py accumClause1
@@ -18,6 +18,7 @@
     * Single gsql file
         ```sh
         ./driver.py setAccum1.gsql
+        ./driver.py accumClause1/setAccum1.gsql
         ```
 
 Other usages of `./driver.py`    
