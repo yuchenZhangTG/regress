@@ -7,26 +7,41 @@ from multiprocessing import Pool, cpu_count
 import os
 from time import time
 import json
+import shutil
 
 parser = argparse.ArgumentParser(description='GSQL regress test driver.')
 parser.add_argument('test', type=str, help='directory name of the test')
 parser.add_argument('--skip', '-s', action='store_true', help='skip parse and precompile')
 parser.add_argument('--info', '-i', action='store_true', help='info mode, print output to terminal not log file')
+parser.add_argument('--real', '-r', action='store_true', help='show difference in realtime')
+parser.add_argument('--time', '-t', action='store_true', help='print parse, install and run time')
 parser.add_argument('--mode', '-m', type=str, choices = ['udf', 'single', 'dist', 'all'], default = 'all', help='skip parse and precompile')
 
 args = parser.parse_args()
 # get directory of the script
-cwd = Path(os.path.realpath(__file__)).parent
-output_folder = cwd/'output'
+root = Path(os.path.realpath(__file__)).parent
+output_folder = root/'output'
 threads = cpu_count()
+modes = ['udf', 'single', 'dist'] if args.mode == 'all' else [args.mode]
 
 def check(test_dir):
   # check the uniqueness of the test folder
   # check the uniqueness of the query name
   pass
 
+def getFiles(f, mode, filesInstall, filesRun):
+  f = Path(f)
+  names = f.name.split('.')
+  if len(names) == 2 and names[-1] == 'gsql':
+    filesInstall.append(f) 
+  if len(names) >= 3:
+    if names[-2] == mode:
+      filesInstall.append(f)
+    elif names[-2] == 'run':
+      filesRun.append(f)
+
 def parse(file):
-  print(f'-- {file}:')
+  print(f'-- {file}')
   subprocess.run(["gsql", "-g", "test_graph", str(file)])
 
 def parse_files(file_list):
@@ -41,86 +56,115 @@ def dump_vset(json_dict):
 def sort_json(json_str):
   json_dict = json.loads(json_str)
   if not json_dict['error']:
-    # printed results is a Vertex Set
     rows = []
     for row in json_dict['results']:
+      # If result is a Vertex Set
       if '"attributes"' in json_str and '"v_id"' in json_str and '"v_type"' in json_str:
         rows.append(dump_vset(row))
-      else:  
+      else:
         rows.append(json.dumps(row, sort_keys=True))
     return '\n'.join(rows)
   else:
     return json_dict['message']
 
-def runQuery(file):
+def runQuery(file, mode):
   print(f'-- {file}')
-  cwd = os.getcwd()
-  output_parent = Path(cwd.replace('test_case/', 'output/')) 
+  file = file.resolve()
+  parent, name = file.parent, file.name
+  # output file
+  output_parent = Path(str(parent).replace('test_case/', 'output/')) 
   output_parent.mkdir(parents=True, exist_ok=True)
-  output_file = output_parent / str(file).replace('.gsql', '.log')
+  
+  names = name.split('.')
+  output_name = name.replace('.gsql', f'.{mode}.log') if len(name) == 2 else name.replace('.gsql', '.log')
+  output_file = output_parent / output_name
+  
+  # baseline file
+  baseline_parent = Path(str(parent).replace('test_case/', 'baseline/'))
+  baseline_parent.mkdir(parents=True, exist_ok=True)
+  baseline_file = baseline_parent / name.replace('.gsql', '.base')
+
   if not args.info:
     fo = open(output_file,'w')
   with open(file) as fi:
     for line in fi:
-      print('\n'+line, end='')
       cmd_out = subprocess.run(["gsql", "-g", "test_graph", line], stdout=subprocess.PIPE).stdout.decode()
-      # output is json
+      # if output is json
       if cmd_out.startswith('{'):
         cmd_out = sort_json(cmd_out)
       if args.info:
+        print(line, end='')
         print(cmd_out)
       else:
-        fo.write(line)
-        fo.write(cmd_out)
+        fo.write(line.strip()+'\n')
+        fo.write(cmd_out.strip()+'\n\n')
+  if args.info:
+    return  
+  fo.close()
+  
+  f1 = output_file.relative_to(root)
+  f2 = baseline_file.relative_to(root)    
+  if not baseline_file.exists():
+    shutil.copy(output_file, baseline_file)
+    print(f'    Created baseline {f2}')
+  elif args.real:
+    cmd_out = subprocess.run(["diff", str(output_file), str(baseline_file)], stdout=subprocess.PIPE)
+    if cmd_out.returncode:
+      print(f'To compare:')
+      print(f'    vi -d {f1} {f2}')
+      print(f'To update:')
+      print(f'    cp {f1} {f2}')
 
 def runQueries(file_list):
   with Pool(processes=threads) as pool:
     pool.map(runQuery, file_list)
-        
+
+def installQueries(mode):
+  if mode == 'udf':
+      subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
+  if mode == 'single':
+    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -single ALL"])
+  if mode == 'dist':
+    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -distributed ALL"])
+  
 def runTest(mode):
-  # catogorize the files
   filesInstall = []
   filesRun = []
-  for f in Path('.').iterdir():
-    name = f.name.split('.')
-    if len(name) == 2 and name[-1] == 'gsql':
-      filesInstall.append(f) 
-    if len(name) >= 3:
-      if name[-2] == mode:
-        filesInstall.append(f)
-      elif name[-2] == 'run':
-        filesRun.append(f)
-  print('\n\n-------- Parse Query --------')
-  start = time()
+  for f in Path('./').glob('**/*.gsql'):
+    getFiles(f, mode, filesInstall, filesRun)
   if not args.skip:
-    parse_files(filesInstall)  
-  parse_time = time() - start
-  print('\n\n-------- Install Query --------')
-  start = time()
-  if not args.skip:
-    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
-  install_time = time() - start
+    print('\n\n-------- Parse Query --------')
+    start = time()
+    parse_files(filesInstall)
+    parse_time = time() - start
+    print(f'\n\n-------- Install Query{mode} --------')
+    start = time()
+    installQueries(mode)
+    install_time = time() - start
   print('\n\n--------- Run Query --------')
   start = time()
   for q in filesRun:
-    runQuery(q)
+    runQuery(q, mode)
   run_time = time() - start
-  print('================= Summary =================')
-  print(f'Parse:   {parse_time:.3f} s')
-  print(f'Install: {install_time:.3f} s')
-  print(f'Run:     {run_time:.3f} s')
+  if args.time:
+    print('============ Runtime Summary ============')
+    if not args.skip:
+      print(f'Parse:   {parse_time:.3f} s')
+      print(f'Install: {install_time:.3f} s')
+    print(f'Run:     {run_time:.3f} s')
 
-os.chdir(cwd)
+os.chdir(root)
 tests = glob(f'test_case/**/{args.test}', recursive=True) 
 print('Tests to run:')
 print('\t' + '\n\t'.join(tests) + '\n')
 
+# ./driver.py read_query
+# ./driver.py test_case
 for test in tests:
   categories = test.split('/')
   print(f'====== {categories[-1]} =====')  
-  modes = ['udf', 'single', 'dist'] if args.mode == 'all' else [args.mode]
   for mode in modes:
     os.chdir(test)
     runTest(mode)
-    os.chdir(cwd)
-  
+    os.chdir(root)
+  exit(0)

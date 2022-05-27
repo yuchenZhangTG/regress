@@ -1,0 +1,13 @@
+RUN QUERY AccumClause1_SetAccum101("2010-01-02")
+{"@@setVertex": ["974", "1276"]}
+{"@@setInt": [1262318439731, 1262346023111]}
+{"@@setUint": [1262318439731, 1262346023111]}
+{"@@setDouble": [60110401891.95238, 60111715386.2381]}
+{"@@setDateime": ["2010-01-01 04:00:39", "2010-01-01 11:40:23"]}
+{"@@setTup": [{"d": 974, "dt": "2010-01-01 04:00:39", "i": 974}, {"d": 1276, "dt": "2010-01-01 11:40:23", "i": 1276}]}
+{"@@setTup2": [{"i": 974, "i2": 974, "s": "Heinz"}, {"i": 1276, "i2": 1276, "s": "Jim"}]}
+
+RUN QUERY AccumClause1_SetAccum102("2010-01-24")
+Semantic Check Fails: The query 'AccumClause1_SetAccum102' has 0 parameter(s), but 1 is given.
+Use "_" for default/empty arguments.
+

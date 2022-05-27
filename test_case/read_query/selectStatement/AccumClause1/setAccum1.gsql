@@ -39,7 +39,7 @@ CREATE OR REPLACE QUERY AccumClause1_SetAccum102 (DATETIME date) {
   SetAccum<TUP2>  @@setTup2;
 
   S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
-    WHERE e.creationDate < to_datetime(date)
+    WHERE e.creationDate < date
     # GLE-3372 - The second statement does not work
     # WHERE s.creationDate < to_datetime("2010-01-02") AND e.creationDate < to_datetime("2010-01-02") 
     ACCUM
