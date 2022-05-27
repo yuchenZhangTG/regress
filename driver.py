@@ -8,7 +8,7 @@ import os
 from time import time
 import json
 import shutil
-
+import uuid
 parser = argparse.ArgumentParser(description='GSQL regress test driver.')
 parser.add_argument('test', type=str, help='directory name of the test')
 parser.add_argument('--skip', '-s', action='store_true', help='skip parse and precompile')
@@ -23,6 +23,7 @@ root = Path(os.path.realpath(__file__)).parent
 output_folder = root/'output'
 threads = cpu_count()
 modes = ['udf', 'single', 'dist'] if args.mode == 'all' else [args.mode]
+dist_tmp = Path('/tmp/distQuery/')
 
 def check(test_dir):
   # check the uniqueness of the test folder
@@ -43,22 +44,70 @@ def getFiles(f, mode, filesInstall, filesRun):
     elif names[-2] == 'run':
       filesRun.append(f)
 
+def parse_dist(file):
+  print(f'-- {file}')
+  tmp_file = dist_tmp / (file.stem + '-' + str(uuid.uuid4()) + file.suffix)
+  with open(tmp_file, 'w') as fo, open(file, 'r') as fi:
+    for line in fi:
+      fo.write(line
+        .replace('CREATE OR REPLACE QUERY', 'CREATE OR REPLACE DISTRIBUTED QUERY')
+        .replace('CREATE QUERY', 'CREATE DISTRIBUTED QUERY')
+        .replace('create or replace query', 'create or replace distributed query')
+        .replace('create query', 'created distributed query')
+        )
+  subprocess.run(["gsql", "-g", "test_graph", str(tmp_file)])
+
 def parse(file):
   print(f'-- {file}')
   subprocess.run(["gsql", "-g", "test_graph", str(file)])
 
-def parse_files(file_list):
-  with Pool(processes=threads) as pool:
-    pool.map(parse, file_list)
+def parse_files(file_list, mode):
+  if mode == 'dist':
+    dist_tmp.mkdir(parents=True, exist_ok=True)  
+    with Pool(processes=threads) as pool:
+      pool.map(parse_dist, file_list)
+    #shutil.rmtree(dist_tmp)
+  else:
+    with Pool(processes=threads) as pool:
+      pool.map(parse, file_list)
 
 def installQueries(mode):
-  if mode == 'udf':
-      subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
   if mode == 'single':
-    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -single ALL"])
-  if mode == 'dist':
-    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -distributed ALL"])
+    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -SINGLE ALL"])
+  else:
+    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
+  
+def json_to_tupList(json_dict):
+  if type(json_dict) is dict:
+    return [(k,json_to_tupList(v)) for k,v in json_dict.items()]
+  elif type(json_dict) is list:
+    return [json_to_tupList(v) for v in json_dict]
+  else:
+    return json_dict
 
+def sort_tupleList(tupleList):
+  if type(tupleList) is list: 
+    mylist = [sort_tupleList(v) for v in tupleList]
+    mylist.sort()
+    return tuple(mylist)
+  else:
+    return tupleList
+
+def sort_json(json_str):
+  json_dict = json.loads(json_str)
+  if not json_dict['error']:
+    rows = []
+    for row in json_dict['results']:
+      if type(row) is dict:
+        for k,v in row.items():
+          tupleList = json_to_tupList(v)
+          sorted_tuple= sort_tupleList(tupleList)
+          rows.append(f'{k}:{sorted_tuple}')
+    return '\n'.join(rows)
+  else:
+    return json_dict['message']
+
+"""
 def dump_vset(json_dict):
   for k,v in json_dict.items():
     v.sort(key=lambda x: (x['v_type'],x['v_id'])) # vertex ids are sorted in alphebatic order
@@ -77,6 +126,7 @@ def sort_json(json_str):
     return '\n'.join(rows)
   else:
     return json_dict['message']
+"""
 
 def getOutputFile(file):
   file = file.resolve()
@@ -150,25 +200,25 @@ def runTest(mode):
   for f in Path('./').glob('**/*.gsql'):
     getFiles(f, mode, filesInstall, filesRun)
   if not args.skip:
-    print('\n\n-------- Parse Query --------')
+    print(f'\n\n------------ {mode.upper()}: Parse  ------------')
     start = time()
-    parse_files(filesInstall)
+    parse_files(filesInstall, mode)
     parse_time = time() - start
-    print(f'\n\n------ Install Query : {mode} -------')
+    print(f'\n\n------------ {mode.upper()}: Install ------------')
     start = time()
     installQueries(mode)
     install_time = time() - start
-  print('\n\n--------- Run Query --------')
+  print(f'\n\n------------ {mode.upper()}: Run ------------')
   start = time()
   for q in filesRun:
     runQuery(q, mode)
   run_time = time() - start
-  print('\n\n--------- Compare Results --------')
   if not args.real:
+    print(f'\n\n--------- {mode.upper()}: Compare ------------')
     compare_files(filesRun)
 
   if args.time:
-    print('============ Runtime Summary ============')
+    print(f'\n============ {mode.upper()}: Summary ============')
     if not args.skip:
       print(f'Parse:   {parse_time:.3f} s')
       print(f'Install: {install_time:.3f} s')
