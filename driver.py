@@ -142,23 +142,27 @@ def installQueries(mode):
   else:
     subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
 
-def getOutputFile(file):
+def getOutputFile(file, mode):
   file = file.resolve()
   parent, name = file.parent, file.name
   output_parent = Path(str(parent).replace('test_case/', 'output/')) 
   output_parent.mkdir(parents=True, exist_ok=True)
   names = name.split('.')
-  output_name = name.replace('.run', f'.{mode}.log') if len(name) == 2 else name.replace('.run', '.log')
+  output_name = name.replace('.run', f'.{mode}.log') if len(name) == 2 else name.replace('.run', f'.{mode}.log')
   output_file = output_parent / output_name
   baseline_parent = Path(str(parent).replace('test_case/', 'baseline/'))
   baseline_parent.mkdir(parents=True, exist_ok=True)
   baseline_file = baseline_parent / name.replace('.run', '.base')
-  diff_file = Path(str(file).replace('.run', '.diff'))
+  baseline_file2 = baseline_parent / name.replace('.run', f'.{mode}.base')
+  # overwrite the generic baseline
+  if baseline_file2.is_file():
+    baseline_file = baseline_file2
+  diff_file = Path(str(file).replace('test_case/', 'diff/'))
   return output_file, baseline_file, diff_file
 
 def runQuery(file, mode):
   print(f'-- {file}')
-  output_file, baseline_file, diff_file = getOutputFile(file)
+  output_file, baseline_file, diff_file = getOutputFile(file, mode)
   if not args.info:
     print(f'Writing results to output/')
     fo = open(output_file,'w')
@@ -211,7 +215,7 @@ def compare(output_file, baseline_file, diff_file):
 def compare_files(file_list, mode):
   num_diff = 0
   for file in file_list:
-    output_file, baseline_file, diff_file = getOutputFile(file)
+    output_file, baseline_file, diff_file = getOutputFile(file, mode)
     num_diff += compare(output_file, baseline_file, diff_file)
   if num_diff == 0:
     print(f'    {bcolor.GREEN}{mode.upper()} : PASS{bcolor.ENDC}\n')

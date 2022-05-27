@@ -1,0 +1,27 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/select-statement/select-statement-v1#_sample_clause
+# SYNTAX v2 not supported yet
+CREATE OR REPLACE QUERY  sampleClause1_sampleEdge101(DATETIME date) SYNTAX v1 {
+   MaxAccum<INT> @@maxId;
+   SetAccum<INT> @@toId;
+   SetAccum<INT> @@toId2;
+   P = SELECT s FROM (Person):s
+     WHERE s.creationDate < date;
+
+   S1 = SELECT s FROM P:s -(:e)- :t
+      SAMPLE 1 EDGE WHEN s.outdegree() > 10
+      ACCUM
+         @@maxId += s.id,
+         @@toId += t.id;
+   
+   T1 = SELECT t FROM P:s -(:e)- :t
+      SAMPLE 1 EDGE WHEN s.outdegree() > 10
+      POST-ACCUM
+         @@toId2 += t.id;
+   
+   # Results are random, not able to compare
+   #PRINT P[P.lastName];
+   #PRINT T1[T1.id];
+   #PRINT @@maxId;
+   #PRINT @@toId;
+   #PRINT @@toId2;
+}

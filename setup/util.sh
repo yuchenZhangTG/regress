@@ -3,12 +3,14 @@ pushd . > /dev/null
 cd "$( cd "$( dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" >/dev/null 2>&1 && pwd )"
 cd ..
 export regress=$(pwd)
+export testCase=$regress/test_case
 alias cdregress="cd $regress"
+alias cdtc="cd $regress/test_case"
 alias cdsetup="cd $regress/setup"
-alias cddata="cd $regress/setup/ldbc_snb_data-small/social_network"
+alias cddata="cd $regress/setup/ldbc_snb_data-sf0.1/social_network"
 alias ggsql="gsql -g test_graph"
 cdtest() {
-  dir=$(find $regress -name $1)
+  dir=$(find $regress/test_case -name $1)
   cd $dir
 }
 
