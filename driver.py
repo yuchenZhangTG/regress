@@ -11,12 +11,12 @@ import shutil
 import uuid
 parser = argparse.ArgumentParser(description='GSQL regress test driver.')
 parser.add_argument('test', type=str, help='directory name of the test')
-parser.add_argument('--skip', '-s', action='store_true', help='skip parse and precompile')
-parser.add_argument('--info', '-i', action='store_true', help='info mode, print output to terminal not log file')
-parser.add_argument('--real', '-r', action='store_true', help='show difference in realtime')
+parser.add_argument('--skip', '-s', action='store_true', help='skip query parse and compile, only run queries and compare')
+parser.add_argument('--info', '-i', action='store_true', help='info mode, print results to terminal (default write to `output/` folder).')
+parser.add_argument('--real', '-r', action='store_true', help='show comparison difference in realtime when running queries (default compare results after query run)')
 parser.add_argument('--time', '-t', action='store_true', help='print parse, install and run time')
 parser.add_argument('--update', '-u', action='store_true', help='force update baselines')
-parser.add_argument('--mode', '-m', type=str, choices = ['udf', 'single', 'dist', 'all'], default = 'all', help='skip parse and precompile')
+parser.add_argument('--mode', '-m', type=str, choices = ['udf', 'single', 'dist', 'all'], default = 'all', help='run queries in a specified mode')
 
 args = parser.parse_args()
 # get directory of the script
@@ -26,6 +26,11 @@ threads = cpu_count()
 modes = ['udf', 'single', 'dist'] if args.mode == 'all' else [args.mode]
 dist_tmp = Path('/tmp/distQuery/')
 
+class bcolor:
+  GREEN = '\033[92m'
+  WARNING = '\033[93m'
+  FAIL = '\033[91m'
+  ENDC = '\033[0m'
 def check(test_dir):
   # check the uniqueness of the test folder
   # check the uniqueness of the query name
@@ -33,17 +38,20 @@ def check(test_dir):
 
 def relative(file: Path):
   return file.relative_to(root)
-
+"""
+filter file in certain mode
+  Output: filesInstall, filesRun
+"""
 def getFiles(f, mode, filesInstall, filesRun):
   f = Path(f)
   names = f.name.split('.')
-  if len(names) == 2 and names[-1] == 'gsql':
+  if names[-1] == 'run':
+      filesRun.append(f)
+  elif len(names) == 2 and names[-1] == 'gsql':
     filesInstall.append(f) 
   if len(names) >= 3:
-    if names[-2] == mode:
+    if mode in names[1:-1]:
       filesInstall.append(f)
-    elif names[-2] == 'run':
-      filesRun.append(f)
 
 def parse_dist(file):
   print(f'-- {file}')
@@ -141,17 +149,19 @@ def getOutputFile(file):
   output_parent = Path(str(parent).replace('test_case/', 'output/')) 
   output_parent.mkdir(parents=True, exist_ok=True)
   names = name.split('.')
-  output_name = name.replace('.gsql', f'.{mode}.log') if len(name) == 2 else name.replace('.gsql', '.log')
+  output_name = name.replace('.run', f'.{mode}.log') if len(name) == 2 else name.replace('.run', '.log')
   output_file = output_parent / output_name
   baseline_parent = Path(str(parent).replace('test_case/', 'baseline/'))
   baseline_parent.mkdir(parents=True, exist_ok=True)
-  baseline_file = baseline_parent / name.replace('.gsql', '.base')
-  return output_file,baseline_file
+  baseline_file = baseline_parent / name.replace('.run', '.base')
+  diff_file = Path(str(file).replace('.run', '.diff'))
+  return output_file, baseline_file, diff_file
 
 def runQuery(file, mode):
   print(f'-- {file}')
-  output_file,baseline_file = getOutputFile(file)
+  output_file, baseline_file, diff_file = getOutputFile(file)
   if not args.info:
+    print(f'Writing results to output/')
     fo = open(output_file,'w')
   with open(file) as fi:
     for line in fi:
@@ -172,13 +182,13 @@ def runQuery(file, mode):
     shutil.copy(output_file, baseline_file)
     print(f'    Created baseline {f2}')
   elif args.real:
-    compare(output_file, baseline_file)
+    compare(output_file, baseline_file, diff_file)
   
 def runQueries(file_list):
   with Pool(processes=threads) as pool:
     pool.map(runQuery, file_list)
 
-def compare(output_file, baseline_file):
+def compare(output_file, baseline_file, diff_file):
   cmd_out = subprocess.run(["diff", str(output_file), str(baseline_file)], stdout=subprocess.PIPE)
   r1 = relative(output_file)
   r2 = relative(baseline_file)
@@ -188,6 +198,9 @@ def compare(output_file, baseline_file):
     shutil.copy(output_file, baseline_file)
     print(f'Updated {r2}')
     return cmd_out.returncode
+  diff_file.parent.mkdir(exist_ok=True, parents=True)
+  with open(diff_file,'w') as f:
+    f.write(cmd_out.stdout.decode())
   print(f'Wrong results in {r1}')
   print(f'To compare:')
   print(f'    vi -d {r1} {r2}')
@@ -196,15 +209,15 @@ def compare(output_file, baseline_file):
   print()
   return cmd_out.returncode
 
-def compare_files(file_list):
+def compare_files(file_list, mode):
   num_diff = 0
   for file in file_list:
-    output_file,baseline_file = getOutputFile(file)
-    num_diff += compare(output_file, baseline_file)
+    output_file, baseline_file, diff_file = getOutputFile(file)
+    num_diff += compare(output_file, baseline_file, diff_file)
   if num_diff == 0:
-    print('-- PASS')
+    print(f'    {bcolor.GREEN}{mode.upper()} : PASS{bcolor.ENDC}\n')
   else:
-    print(f'-- {num_diff} files are differet')
+    print(f'    {bcolor.FAIL}{mode.upper()} : FAIL - {num_diff} files are differet{bcolor.ENDC}\n')
 
 def runTest(mode):
   filesInstall = []
@@ -212,25 +225,25 @@ def runTest(mode):
   for f in Path('./').glob('**/*.gsql'):
     getFiles(f, mode, filesInstall, filesRun)
   if not args.skip:
-    print(f'\n\n------------ {mode.upper()}: Parse  ------------')
+    print(f'{bcolor.GREEN}------------ {mode.upper()}: Parse  ------------{bcolor.ENDC}')
     start = time()
     parse_files(filesInstall, mode)
     parse_time = time() - start
-    print(f'\n\n------------ {mode.upper()}: Install ------------')
+    print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Install ------------{bcolor.ENDC}')
     start = time()
     installQueries(mode)
     install_time = time() - start
-  print(f'\n\n------------ {mode.upper()}: Run ------------')
+  print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Run ------------{bcolor.ENDC}')
   start = time()
   for q in filesRun:
     runQuery(q, mode)
   run_time = time() - start
   if not args.real:
-    print(f'\n\n--------- {mode.upper()}: Compare ------------')
-    compare_files(filesRun)
+    print(f'\n\n{bcolor.GREEN}--------- {mode.upper()}: Compare ------------{bcolor.ENDC}')
+    compare_files(filesRun, mode)
 
   if args.time:
-    print(f'\n============ {mode.upper()}: Summary ============')
+    print(f'\n{bcolor.GREEN}============ {mode.upper()}: Summary ============{bcolor.ENDC}')
     if not args.skip:
       print(f'Parse:   {parse_time:.3f} s')
       print(f'Install: {install_time:.3f} s')
@@ -244,12 +257,12 @@ def runTest(mode):
 """
 os.chdir(root)
 tests = glob(f'test_case/**/{args.test}', recursive=True) 
-print('Tests to run:')
-print('\t' + '\n\t'.join(tests) + '\n')
+print(f'{bcolor.GREEN}Tests to run:')
+print(f'  --' + '\n  --'.join(tests) + bcolor.ENDC)
 
 for test in tests:
   categories = test.split('/')
-  print(f'====== {categories[-1]} =====')  
+  print(f'\n{bcolor.GREEN}=========== Run test: {categories[-1]} ============{bcolor.ENDC}')  
   for mode in modes:
     os.chdir(test)
     runTest(mode)

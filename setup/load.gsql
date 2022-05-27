@@ -1,6 +1,6 @@
 # Please refer to https://docs.tigergraph.com/gsql-ref/current/ddl-and-loading/creating-a-loading-job
 USE GRAPH test_graph
-SET sys.data_root="./data_set/ldbc_snb_data-small/social_network"
+SET sys.data_root="./ldbc_snb_data-small/social_network"
 #DROP JOB load_ldbc_snb
 CREATE LOADING JOB load_ldbc_snb {
   # load vertex for original LDBC
