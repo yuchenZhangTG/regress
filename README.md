@@ -18,10 +18,8 @@
         ```sh
         ./driver.py read_query
         ```
-    * All tests
-        ```sh
-        ./driver.py all
-        ```
+    * TO DO: single gsql file
+
 Other usages of `./driver.py`    
 * `--skip` or `-s` to skip parse and install, only run queries.
 * `--mode [mode]` or `-m [mode]` to run only one mode.
@@ -41,23 +39,4 @@ For example, I use  `./driver.py vSetAssign1 -rsim udf` to debug single query or
 1. Utility function `check_stat` can check the data statistics. The data set has dominant number of `Comment` vertices. Writing queries on `Comment` vertices require preformance consideration.
 1. About Comments in query. We use Github internal log to track the last author and modified date. Comments need to address 
     * The tested functionality or documentation link
-    * The discovered or tested bug and ticket number 
-
-## Usage of the test driver `./driver.py`
-./driver.py globalAccum
-```
-
-
-```
-./setup.sh
-./driver.py globalAccum
-
-
-
-## Migrate old tests
-| Old test  | new test |
-| ------------- | ------------- |
-| end2end/gquery/regress1  | read_query/buildIn/selectStar  |
-| end2end/gquery/regress804  | read/e2e/select1  |
-
-regress44
+    * The discovered or tested bug and ticket number

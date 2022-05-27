@@ -29,6 +29,9 @@ def check(test_dir):
   # check the uniqueness of the query name
   pass
 
+def relative(file):
+  return file.relative_to(root)
+
 def getFiles(f, mode, filesInstall, filesRun):
   f = Path(f)
   names = f.name.split('.')
@@ -47,6 +50,14 @@ def parse(file):
 def parse_files(file_list):
   with Pool(processes=threads) as pool:
     pool.map(parse, file_list)
+
+def installQueries(mode):
+  if mode == 'udf':
+      subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
+  if mode == 'single':
+    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -single ALL"])
+  if mode == 'dist':
+    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -distributed ALL"])
 
 def dump_vset(json_dict):
   for k,v in json_dict.items():
@@ -67,23 +78,22 @@ def sort_json(json_str):
   else:
     return json_dict['message']
 
-def runQuery(file, mode):
-  print(f'-- {file}')
+def getOutputFile(file):
   file = file.resolve()
   parent, name = file.parent, file.name
-  # output file
   output_parent = Path(str(parent).replace('test_case/', 'output/')) 
   output_parent.mkdir(parents=True, exist_ok=True)
-  
   names = name.split('.')
   output_name = name.replace('.gsql', f'.{mode}.log') if len(name) == 2 else name.replace('.gsql', '.log')
   output_file = output_parent / output_name
-  
-  # baseline file
   baseline_parent = Path(str(parent).replace('test_case/', 'baseline/'))
   baseline_parent.mkdir(parents=True, exist_ok=True)
   baseline_file = baseline_parent / name.replace('.gsql', '.base')
+  return output_file,baseline_file
 
+def runQuery(file, mode):
+  print(f'-- {file}')
+  output_file,baseline_file = getOutputFile(file)
   if not args.info:
     fo = open(output_file,'w')
   with open(file) as fi:
@@ -101,32 +111,39 @@ def runQuery(file, mode):
   if args.info:
     return  
   fo.close()
-  
-  f1 = output_file.relative_to(root)
-  f2 = baseline_file.relative_to(root)    
   if not baseline_file.exists():
     shutil.copy(output_file, baseline_file)
     print(f'    Created baseline {f2}')
   elif args.real:
-    cmd_out = subprocess.run(["diff", str(output_file), str(baseline_file)], stdout=subprocess.PIPE)
-    if cmd_out.returncode:
-      print(f'To compare:')
-      print(f'    vi -d {f1} {f2}')
-      print(f'To update:')
-      print(f'    cp {f1} {f2}')
-
+    compare(output_file, baseline_file)
+  
 def runQueries(file_list):
   with Pool(processes=threads) as pool:
     pool.map(runQuery, file_list)
 
-def installQueries(mode):
-  if mode == 'udf':
-      subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
-  if mode == 'single':
-    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -single ALL"])
-  if mode == 'dist':
-    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -distributed ALL"])
-  
+def compare(output_file, baseline_file):
+  cmd_out = subprocess.run(["diff", str(output_file), str(baseline_file)], stdout=subprocess.PIPE)
+  r1 = relative(output_file)
+  r2 = relative(baseline_file)
+  if cmd_out.returncode:
+    print(f'Wrong results in {r1}')
+    print(f'To compare:')
+    print(f'    vi -d {r1} {r2}')
+    print(f'To update:')
+    print(f'    cp {r1} {r2}')
+    print()
+  return cmd_out.returncode
+
+def compare_files(file_list):
+  num_diff = 0
+  for file in file_list:
+    output_file,baseline_file = getOutputFile(file)
+    num_diff += compare(output_file, baseline_file)
+  if num_diff == 0:
+    print('-- PASS')
+  else:
+    print(f'-- {num_diff} files are differet')
+
 def runTest(mode):
   filesInstall = []
   filesRun = []
@@ -137,7 +154,7 @@ def runTest(mode):
     start = time()
     parse_files(filesInstall)
     parse_time = time() - start
-    print(f'\n\n-------- Install Query{mode} --------')
+    print(f'\n\n------ Install Query : {mode} -------')
     start = time()
     installQueries(mode)
     install_time = time() - start
@@ -146,6 +163,10 @@ def runTest(mode):
   for q in filesRun:
     runQuery(q, mode)
   run_time = time() - start
+  print('\n\n--------- Compare Results --------')
+  if not args.real:
+    compare_files(filesRun)
+
   if args.time:
     print('============ Runtime Summary ============')
     if not args.skip:
@@ -158,8 +179,6 @@ tests = glob(f'test_case/**/{args.test}', recursive=True)
 print('Tests to run:')
 print('\t' + '\n\t'.join(tests) + '\n')
 
-# ./driver.py read_query
-# ./driver.py test_case
 for test in tests:
   categories = test.split('/')
   print(f'====== {categories[-1]} =====')  
@@ -167,4 +186,3 @@ for test in tests:
     os.chdir(test)
     runTest(mode)
     os.chdir(root)
-  exit(0)
