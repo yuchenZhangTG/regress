@@ -176,8 +176,8 @@ def runQuery(file, mode):
         print(line.rstrip('\n'))
         print(cmd_out.rstrip('\n')+'\n')
       else:
-        fo.write(line.rstrip('\n'))
-        fo.write(cmd_out.rstrip('\n')+'\n')
+        fo.write(line.rstrip('\n')+'\n')
+        fo.write(cmd_out.rstrip('\n')+'\n\n')
   if args.info:
     return  
   fo.close()
