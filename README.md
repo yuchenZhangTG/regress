@@ -10,17 +10,14 @@
     setup/setup.sh
     ``` 
 1. Use to driver to
-    * run single test
-        ```sh
-        ./driver.py acc
-        ``` 
-    * A category of tests
+    * Any category of tests
         ```sh
         ./driver.py read_query
+        ./driver.py accumClause1
         ```
     * Single gsql file
         ```sh
-        ./driver.py accumClause1/setAccum1.gsql
+        ./driver.py setAccum1.gsql
         ```
 
 Other usages of `./driver.py`    

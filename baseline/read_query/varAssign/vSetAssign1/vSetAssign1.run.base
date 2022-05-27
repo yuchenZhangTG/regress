@@ -1,5 +1,0 @@
-RUN QUERY vSetAssign_vSetAssign101("2010-01-03")S1:[{'attributes': {'id': 974}, 'v_id': '974', 'v_type': 'Person'}, {'attributes': {'id': 1276}, 'v_id': '1276', 'v_type': 'Person'}, {'attributes': {'id': 1564}, 'v_id': '1564', 'v_type': 'Person'}]
-S2:[{'attributes': {'id': 459}, 'v_id': '459', 'v_type': 'Person'}, {'attributes': {'id': 974}, 'v_id': '974', 'v_type': 'Person'}, {'attributes': {'id': 1276}, 'v_id': '1276', 'v_type': 'Person'}, {'attributes': {'id': 1564}, 'v_id': '1564', 'v_type': 'Person'}]
-S4:[{'attributes': {'id': 974}, 'v_id': '974', 'v_type': 'Person'}, {'attributes': {'id': 1259}, 'v_id': '1259', 'v_type': 'Person'}, {'attributes': {'id': 1276}, 'v_id': '1276', 'v_type': 'Person'}, {'attributes': {'id': 1564}, 'v_id': '1564', 'v_type': 'Person'}]
-S4:[{'attributes': {'id': 974}, 'v_id': '974', 'v_type': 'Person'}, {'attributes': {'id': 1276}, 'v_id': '1276', 'v_type': 'Person'}, {'attributes': {'id': 1564}, 'v_id': '1564', 'v_type': 'Person'}]
-S4:[{'attributes': {'id': 459}, 'v_id': '459', 'v_type': 'Person'}]

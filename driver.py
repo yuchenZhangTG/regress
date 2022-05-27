@@ -31,6 +31,7 @@ class bcolor:
   WARNING = '\033[93m'
   FAIL = '\033[91m'
   ENDC = '\033[0m'
+
 def check(test_dir):
   # check the uniqueness of the test folder
   # check the uniqueness of the query name
@@ -38,12 +39,9 @@ def check(test_dir):
 
 def relative(file: Path):
   return file.relative_to(root)
-"""
-filter file in certain mode
-  Output: filesInstall, filesRun
-"""
-def getFiles(f, mode, filesInstall, filesRun):
-  f = Path(f)
+
+# collect files in certain mode, files are collected in filesInstall, filesRun
+def filterFiles(f:Path, mode, filesInstall, filesRun):
   names = f.name.split('.')
   if names[-1] == 'run':
       filesRun.append(f)
@@ -53,8 +51,9 @@ def getFiles(f, mode, filesInstall, filesRun):
     if mode in names[1:-1]:
       filesInstall.append(f)
 
-def parse_dist(file):
+def parseDist(file):
   print(f'-- {file}')
+  file = Path(file)
   tmp_file = dist_tmp / (file.stem + '-' + str(uuid.uuid4()) + file.suffix)
   with open(tmp_file, 'w') as fo, open(file, 'r') as fi:
     for line in fi:
@@ -127,11 +126,11 @@ def parse(file):
   print(f'-- {file}')
   subprocess.run(["gsql", "-g", "test_graph", str(file)])
 
-def parse_files(file_list, mode):
+def parseFiles(file_list, mode):
   if mode == 'dist':
     dist_tmp.mkdir(parents=True, exist_ok=True)  
     with Pool(processes=threads) as pool:
-      pool.map(parse_dist, file_list)
+      pool.map(parseDist, file_list)
     #shutil.rmtree(dist_tmp)
   else:
     with Pool(processes=threads) as pool:
@@ -180,7 +179,7 @@ def runQuery(file, mode):
   fo.close()
   if not baseline_file.exists():
     shutil.copy(output_file, baseline_file)
-    print(f'    Created baseline {f2}')
+    print(f'    Created baseline {relative(baseline_file)}')
   elif args.real:
     compare(output_file, baseline_file, diff_file)
   
@@ -219,15 +218,20 @@ def compare_files(file_list, mode):
   else:
     print(f'    {bcolor.FAIL}{mode.upper()} : FAIL - {num_diff} files are differet{bcolor.ENDC}\n')
 
-def runTest(mode):
+def runTest(mode, query):
   filesInstall = []
   filesRun = []
-  for f in Path('./').glob('**/*.gsql'):
-    getFiles(f, mode, filesInstall, filesRun)
+  if query:
+    filesInstall.append(Path(query))
+    filesRun.append(Path(query.replace('.gsql','.run')))
+  else:
+    for f in Path('./').glob('**/*.gsql'):
+      filterFiles(f, mode, filesInstall, filesRun)
+  
   if not args.skip:
     print(f'{bcolor.GREEN}------------ {mode.upper()}: Parse  ------------{bcolor.ENDC}')
     start = time()
-    parse_files(filesInstall, mode)
+    parseFiles(filesInstall, mode)
     parse_time = time() - start
     print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Install ------------{bcolor.ENDC}')
     start = time()
@@ -261,9 +265,14 @@ print(f'{bcolor.GREEN}Tests to run:')
 print(f'  --' + '\n  --'.join(tests) + bcolor.ENDC)
 
 for test in tests:
+  if Path(test).is_file():
+    test_file = Path(test)
+    test, query = str(test_file.parent), test_file.name
+  else:
+    query = None
   categories = test.split('/')
   print(f'\n{bcolor.GREEN}=========== Run test: {categories[-1]} ============{bcolor.ENDC}')  
   for mode in modes:
     os.chdir(test)
-    runTest(mode)
+    runTest(mode, query)
     os.chdir(root)
