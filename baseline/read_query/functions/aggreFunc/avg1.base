@@ -1,0 +1,11 @@
+RUN QUERY aggreFunc_avg1 ("2010-01-03", 2, 2)
+avg([5,4,1,0,0,0]):1
+avg([3.0,2.0,3.0,100]):27
+avg(distinctpSet):2
+avg(pBag):2
+@@intSum/S1.size():1262358919
+epoch_to_datetime(avg(@@intSet)):2010-01-01 15:15:19
+epoch_to_datetime(avg(@@intBag)):2010-01-01 15:15:19
+epoch_to_datetime(avg(distinct@@intSet)):2010-01-01 15:15:19
+epoch_to_datetime(avg(distinct@@intBag)):2010-01-01 15:15:19
+

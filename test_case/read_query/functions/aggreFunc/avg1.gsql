@@ -1,0 +1,30 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/func/aggregation-functions#_avg
+CREATE OR REPLACE QUERY aggreFunc_avg1 (DATETIME date, SET<INT> pSet, BAG<DOUBLE> pBag) {
+  SetAccum<UINT> @@intSet;
+  BagAccum<UINT> @@intBag;
+  SumAccum<UINT> @@intSum;
+
+  PRINT avg([5, 4, 1, 0, 0, 0]);
+  # DISTINCT Wrong result https://graphsql.atlassian.net/browse/GLE-3386
+  #PRINT avg(DISTINCT [5, 4, 1, 0, 0, 0]); 
+  PRINT avg([3.0, 2.0, 3.0, 100]);
+  PRINT avg(DISTINCT pSet);
+  PRINT avg(pBag);
+
+  S1 = SELECT s FROM tupPerson:s
+    WHERE s.creationDate < date
+    ACCUM 
+      UINT a = s.creationEpoch / 1000,
+      @@intSet += a,
+      @@intBag += a,
+      @@intSum += a;
+  PRINT @@intSum / S1.size();
+  PRINT epoch_to_datetime(avg(@@intSet));
+  PRINT epoch_to_datetime(avg(@@intBag));
+  PRINT epoch_to_datetime(avg(DISTINCT @@intSet));
+  PRINT epoch_to_datetime(avg(DISTINCT @@intBag));
+}
+
+# https://graphsql.atlassian.net/browse/GLE-3385
+# cannot call SET/BAG parameter
+# RUN QUERY aggreFunc_avg1 ("2010-01-03", (2,3,4,5), (3.0, 332, 0.2))
