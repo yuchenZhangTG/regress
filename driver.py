@@ -9,6 +9,7 @@ from time import time
 import json
 import shutil
 import uuid
+from setup.sort_json import sort_json
 parser = argparse.ArgumentParser(description='GSQL regress test driver.')
 parser.add_argument('test', type=str, help='directory name of the test')
 parser.add_argument('--skip', '-s', action='store_true', help='skip query parse and compile, only run queries and compare')
@@ -27,9 +28,9 @@ modes = ['udf', 'single', 'dist'] if args.mode == 'all' else [args.mode]
 dist_tmp = Path('/tmp/distQuery/')
 
 class bcolor:
+  FAIL = '\033[91m'
   GREEN = '\033[92m'
   WARNING = '\033[93m'
-  FAIL = '\033[91m'
   ENDC = '\033[0m'
 
 def check(test_dir):
@@ -66,58 +67,6 @@ def parseDist(file):
   subprocess.run(["gsql", "-g", "test_graph", str(tmp_file)])
 
 """
-================ JSON sorter =======================
-Json -> list & tuples -> sorted tuples -> Json
-====================================================
-"""  
-def json_to_tupList(x):
-  if type(x) is dict:
-    return ('__DICT__', [(k,json_to_tupList(v)) for k,v in x.items()])
-  elif type(x) is list:
-    return ('__LIST__',[json_to_tupList(v) for v in x])
-  else:
-    return x
-
-def sort_tupleList(x):
-  if type(x) is list:
-    mylist = [sort_tupleList(v) for v in x]
-    mylist.sort()
-    return tuple(mylist)
-  elif type(x) is tuple and len(x)==2:
-    if x[0] == '__DICT__':
-      mylist = [(k,sort_tupleList(v)) for k,v in x[1]]
-      mylist.sort()
-      return (x[0],tuple(mylist))
-    elif x[0] == '__LIST__':
-      mylist = [sort_tupleList(v) for v in x[1]]
-      mylist.sort()
-      return (x[0],tuple(mylist))
-  return x
-
-def decode_tupleList(x):
-  if type(x) is tuple and len(x) == 2:
-    if x[0] == '__LIST__':
-      x = [decode_tupleList(v) for v in x[1]]
-    if x[0] == '__DICT__':
-      x = {k:decode_tupleList(v) for k,v in x[1]}
-  return x
-
-def sort_json(json_str):
-  json_dict = json.loads(json_str)
-  if not json_dict['error']:
-    rows = []
-    for row in json_dict['results']:
-      if type(row) is dict:
-        for k,v in row.items():
-          tupleList = json_to_tupList(v)
-          sorted_tuple = sort_tupleList(tupleList)
-          sorted_json = decode_tupleList(sorted_tuple)
-          rows.append(f'{k}:{sorted_json}')
-    return '\n'.join(rows)
-  else:
-    return json_dict['message']
-
-"""
 ================ GSQL file handlers =======================
 Parse, install, run,
 ===========================================================
@@ -148,7 +97,7 @@ def getOutputFile(file, mode):
   output_parent = Path(str(parent).replace('test_case/', 'output/')) 
   output_parent.mkdir(parents=True, exist_ok=True)
   names = name.split('.')
-  output_name = name.replace('.run', f'.{mode}.log') if len(name) == 2 else name.replace('.run', f'.{mode}.log')
+  output_name = name.replace('.run', f'.{mode}.out') if len(name) == 2 else name.replace('.run', f'.{mode}.out')
   output_file = output_parent / output_name
   baseline_parent = Path(str(parent).replace('test_case/', 'baseline/'))
   baseline_parent.mkdir(parents=True, exist_ok=True)

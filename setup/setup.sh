@@ -16,7 +16,7 @@ gsql schema.gsql
 echo '=============================='
 echo 'Load data'
 echo '=============================='
-if [ ! -d "ldbc_snb_data-small" ]; then
+if [ ! -d "ldbc_snb_data-sf0.1" ]; then
   echo 'Downloading LDBC SNB SF-0.1 data.'
   wget https://storage.googleapis.com/tigergraph/ldbc_snb_data-sf0.1.tar.gz
   tar -xf ldbc_snb_data-sf0.1.tar.gz

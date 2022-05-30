@@ -1,21 +1,4 @@
 #!/bin/bash
-#################################################
-# GSQL language user management commands        #
-# positive and negative test cases              #
-# Tester: Chengjie, Jue                         #
-# This is the script to test user management    #
-# commands.                                     #
-# NOTE: Please make sure you clean up after     #
-# yourself.                                     #
-#                                               #
-# Detailed commands tested:                     #
-# CREATE/DROP USER                              #
-# ALTER PASSWORD [user1]                        #
-# CREATE/SHOW/DROP SECRET/TOKEN                 #
-# REFRESH TOKEN token1                          #
-# GRANT/REVOKE ROLE admin to user1, user2       #
-#################################################
-# Migrated from gle/regress/test_case/shell/regress10/test1.sh
 . $regress/setup/util.sh
 lifeTimeComparetor() {
   threshold=300
@@ -48,7 +31,7 @@ echo -e 'user2\nuser2\nuser2\n' | gsql "create user"
 echo -e 'user3\nuser3\nuser3\n' | gsql "create user"
 echo -e 'user_3\nuser_3\nuser_3\n' | gsql "create user"
 
-echoTitle 'create user (negative)'
+echoNegative 'create user'
 # distinct passwords
 echo -e "user4\nuser4\nuser5\n" | gsql "create user" || true
 # duplicate username
@@ -60,26 +43,23 @@ echo -e ":user1\nuser1\nuser1\n" | gsql "create user" || true
 echo -e "user1 \nuser1\nuser1\n" | gsql "create user" || true
 # use keywords as username
 echo -e "admin\nuser1\nuser1\n" | gsql "create user" || true
-
 # show users, check user existence
 gsql "show user"
 
-echoTile 'alter password'
+echoTitle 'alter password'
 echo -e "user2\nuser2\n" | gsql "alter password user1"
 echo -e "!ok\$ok_ok\n!ok\$ok_ok\n" | gsql "alter password"
 echo -e "!ok\$ok_ok\ntigergraph\ntigergraph\n" | gsql "alter password"
 
-echoTitle 'alter password (negative)'
+echoNegative 'alter password'
 # non-existing user
 echo -e 'blah\nblah\n' | gsql "alter password user4" || true
 # different passwords
 echo -e "user2\nuser1\n" | gsql "alter password user1" || true
 
+echoTitle 'create token'
 # create and show secret
 secret=`gsql -g test_graph "create secret" | grep "secret" | head -n 1 | cut -d " " -f 3`
-
-
-echoTitle 'create token'
 token=$(curl -s -X POST -d "{"secret": "${secret}"}" "localhost:8123/requesttoken" | cut -f 7 -d : | cut -b 2-33)
 # create token from file payload
 echo "{\"secret\": \"${secret}\"}"  > /tmp/secret.dat
@@ -112,7 +92,7 @@ currentTimeStamp=$(((timeStamp*1000+10#`date "+%N"`/1000000)/1000))
 operationTimeStamp=$(curl -w "\n" -s -X POST -d "{\"secret\": \"${secret}\"}" "localhost:8123/requesttoken" | jq '.expiration')
 lifeTimeComparetor 2592000 $operationTimeStamp $currentTimeStamp
 
-echoTitle 'create token (negative)'
+echoNegative 'create token'
 # wrong secret
 curl -s -X POST -d '{"secret": "abcdefg", "lifetime": "1000"}' "localhost:8123/requesttoken"
 echo '{"secret": "abcdefg", "lifetime": "1000"}' > /tmp/secret.dat
@@ -181,7 +161,7 @@ lifeTimeComparetor 60000 $operationTimeStamp $currentTimeStamp
 gsql -g test_graph "grant ROLE querywriter to user3"
 tokenU3=$(curl -s --user user3:user3 -X POST -d "{\"graph\": \"test_graph\"}" "localhost:8123/requesttoken" | jq .results.token | cut -b 2-33)
 
-echoTitle 'refresh token (negative)'
+echoNegative 'refresh token'
 # negative case: refresh other's token via user without superuser role
 curl -s --user user3:user3 -X PUT -d "{\"token\": \"${token}\"}" "localhost:8123/requesttoken" | grep -o 'Refresh token failed, Permission denied.'
 # positive case: refresh other's token via user with superuser role
@@ -202,7 +182,7 @@ curl -s -X DELETE -d "{\"secret\": \"${secret}\", \"token\": \"${token}\"}" "loc
 echo "{\"secret\": \"${secret}\", \"token\": \"${token2}\"}" > /tmp/secret.dat
 curl -s -X DELETE -d @/tmp/secret.dat "localhost:8123/requesttoken" | grep -o '"message":"Drop token successfully."'
 
-echoTitle 'drop token (negative)'
+echoNegative 'drop token'
 curl -s -X DELETE -d "{\"secret\": \"${secret}\", \"token\": \"abc123\"}" "localhost:8123/requesttoken"
 curl -s -X DELETE -d "{\"secret\": \"ssssssssssssss\", \"token\": \"abc123\"}" "localhost:8123/requesttoken"
 echo "{\"secret\": \"${secret}\", \"token\": \"abc123\"}" > /tmp/secret.dat
@@ -217,7 +197,7 @@ gsql -g test_graph "grant ROLE queryreader to user1, user2, user3"
 # verify roles
 gsql show user | grep -Ev "Secret|Alias|Token"
 
-echoTitle 'grant roles (negative)'
+echoNegative 'grant roles'
 gsql -g test_graph "grant ROLE abc to user1" || true
 gsql -g test_graph "grant ROLE abc to user1, user2, user9" || true
 gsql -g test_graph "grant ROLE admin to user9" || true
@@ -229,7 +209,7 @@ echoTitle 'revoke roles'
 gsql -g test_graph "revoke ROLE admin from user1"
 gsql -g test_graph "revoke ROLE queryreader from user1, user2, user3"
 
-echoTitle 'revoke roles (negative)'
+echoNegative 'revoke roles'
 gsql -g test_graph "revoke ROLE admin from user1,user2,user3" || true
 gsql -g test_graph "revoke ROLE querywriter from user4,user2,user3" || true
 gsql -g test_graph "revoke ROLE abc from user1" || true
@@ -237,10 +217,8 @@ gsql -g test_graph "revoke ROLE abc from user1" || true
 echoTitle 'cleaning up'
 # drop token
 curl -s -X DELETE -d "{\"secret\": \"${secret}\", \"token\": \"${token}\"}" "localhost:8123/requesttoken" | grep -oh "doesn't exist"
-echo "[GTEST_IB]"
 # drop secret
-gsql -g test_graph "drop secret $secret"
-echo "[GTEST_IE]"
+gsql -g test_graph "drop secret $secret" | 
 
 # drop users
 gsql "drop user user1"
