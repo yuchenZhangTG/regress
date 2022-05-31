@@ -136,9 +136,8 @@ def runQuery(mode, file):
       else:
         fo.write(line.rstrip('\n')+'\n')
         fo.write(cmd_out.rstrip('\n')+'\n\n')
-  if args.info:
-    return  
-  fo.close()
+  if not args.info:
+    fo.close()
   if not baseline_file.exists():
     shutil.copy(output_file, baseline_file)
     print(f'    Created baseline {relative(baseline_file)}')

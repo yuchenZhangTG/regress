@@ -46,7 +46,9 @@ def sort_json(json_str):
           rows.append(f'{k}:{sorted_json}')
     return '\n'.join(rows)
   else:
-    return json_dict['message']
+    code = json_dict['code'] if 'code' in json_dict else ''
+    message = json_dict['message'] if 'message' in json_dict else ''
+    return f'ERROR ({code}): {message}'
 
 if __name__ == '__main__':
   for line in sys.stdin:
