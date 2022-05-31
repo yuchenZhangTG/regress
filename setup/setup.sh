@@ -1,4 +1,9 @@
 #!/bin/bash
+# ========================
+# Usage:
+# ./setup.sh
+# ./setup.sh -nodata # only schema without any data 
+# ========================
 pushd . > /dev/null
 cd "$( cd "$( dirname "${BASH_SOURCE[0]:-${(%):-%x}}" )" >/dev/null 2>&1 && pwd )"
 echo '=============================='
@@ -12,6 +17,7 @@ echo '=============================='
 echo 'Set up Schema'
 echo '=============================='
 gsql schema.gsql
+if [ "$1" = "-nodata" ]; then exit 0; fi
 
 echo '=============================='
 echo 'Load data'

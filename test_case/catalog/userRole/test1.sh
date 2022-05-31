@@ -218,7 +218,7 @@ echoTitle 'cleaning up'
 # drop token
 curl -s -X DELETE -d "{\"secret\": \"${secret}\", \"token\": \"${token}\"}" "localhost:8123/requesttoken" | grep -oh "doesn't exist"
 # drop secret
-gsql -g test_graph "drop secret $secret" | 
+gsql -g test_graph "drop secret $secret"
 
 # drop users
 gsql "drop user user1"

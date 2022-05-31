@@ -25,15 +25,14 @@ Other usages of `./driver.py`
 * `--skip` or `-s` to skip query parse and compile, only run queries and compare.
 * `--mode [mode]` or `-m [mode]` to run queries in a specified mode.
 * `--info` or `-i` info mode, print results to terminal (default write to `output/` folder).
-* `--real` or `-r` show comparison difference in realtime when running queries (default compare results after query run).
 
-For example, I use  `./driver.py vSetAssign1 -rsim udf` to debug single query or test.
+For example, I use  `./driver.py vSetAssign1 -sim udf` to debug single query or test.
 
 ## Test case guidelines
 1. Test cases are located in `/*categories*/[test folder]/[query_name].gsql`, test folder name must be unique across different categories
 1. `[query_name].gsql` will be installed in all modes. Secondary extensions `udf`, `single` or `dist` can be used to make query to be installed in a certain mode. The GSQL script to call query ends with `.run`. The output is `.log` and the baseline is `.base`.
 1. The query name in `[query_name].run` must be in format of `[test folder]_[query Name]###`
-1. Length of each print statment is required to be less than 500. Please use attribute `creationDate` or `creationEpoch` to filter vertices. The creation date for LDBC SNB data is nearly uniformly distributed between 2010-01-01 and 2013-01-01. For example, you can create a query as below and tune the parameter values to get the output length in a seasonale length. You can use `./driver.py [test folder]/[query_name].gsql -rsim udf` to print results in terminal and tune the output length. To finish use use `./driver.py [test folder]/[query_name].gsql -rsum udf` to update the baselines.
+1. Length of each print statment is required to be less than 500. Please use attribute `creationDate` or `creationEpoch` to filter vertices. The creation date for LDBC SNB data is nearly uniformly distributed between 2010-01-01 and 2013-01-01. For example, you can create a query as below and tune the parameter values to get the output length in a seasonale length. You can use `./driver.py [test folder]/[query_name].gsql -sim udf` to print results in terminal and tune the output length. To finish use use `./driver.py [test folder]/[query_name].gsql -sum udf` to update the baselines.
     ```gsql
     CREATE OR REPLACE QUERY q (datetime date) {
         S = SELECT s FROM tuplePerson:s WHERE s.creationDate < to_datetime(date)

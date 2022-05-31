@@ -1,0 +1,257 @@
+[92m=======================
+grant/revoke role
+=======================[0m
+Successfully granted roles [querywriter] on graph 'test_graph' to users [tigergraph].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+    - Graph 'test_graph' Roles: querywriter
+
+Successfully granted roles [queryreader] on graph 'test_graph' to users [tigergraph].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+    - Graph 'test_graph' Roles: queryreader, querywriter
+
+Successfully revoked roles [queryreader] on graph 'test_graph' from users [tigergraph].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+    - Graph 'test_graph' Roles: querywriter
+
+Successfully revoked roles [querywriter] on graph 'test_graph' from users [tigergraph].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+
+Semantic Check Fails: The user 'tigergraph' does not have roles [admin] on graph 'test_graph'.
+Failed to revoke roles [admin] on graph 'test_graph' from users [tigergraph].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+
+[92m=======================
+create user
+=======================[0m
+[1;34mUser Name : [0muser1
+[1;34mNew Password : [0m******
+[1;34mRe-enter Password : [0m******
+Successfully created users: [user1].
+[1;34mUser Name : [0muser2
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+Successfully created users: [user2].
+[1;34mUser Name : [0muser3
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+Successfully created users: [user3].
+[1;34mUser Name : [0muser_3
+[1;34mNew Password : [0m******
+[1;34mRe-enter Password : [0m******
+Successfully created users: [user_3].
+[93m=======================
+create user (Negative)
+=======================[0m
+[1;34mUser Name : [0muser4
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+The two passwords do not match.
+Failed to create the user "user4".
+[1;34mUser Name : [0muser1
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+Semantic Check Fails: The user 'user1' already exists! Please use a different name.
+Failed to create users: [user1].
+[1;34mUser Name : [0m:user1
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+Semantic Check Fails: The name must start with a character and can only contain alphanumeric characters and "_", or it must be enclosed with backquotes(`).
+Failed to create users: [].
+[1;34mUser Name : [0muser1 
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+Semantic Check Fails: The name must start with a character and can only contain alphanumeric characters and "_", or it must be enclosed with backquotes(`).
+Failed to create users: [user1 ].
+[1;34mUser Name : [0madmin
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+Semantic Check Fails: The name 'admin' is a keyword.
+Failed to create users: [admin].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+
+  - Name: user1
+
+  - Name: user2
+
+  - Name: user3
+
+  - Name: user_3
+
+[92m=======================
+alter password
+=======================[0m
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+Successfully changed the password for the user 'user1'.
+[1;34mNew Password : [0m*********
+[1;34mRe-enter Password : [0m*********
+Successfully changed the password for the user 'tigergraph'.
+[1;34mPassword for tigergraph : [0m*********
+[1;34mNew Password : [0m**********
+[1;34mRe-enter Password : [0m**********
+Successfully changed the password for the user 'tigergraph'.
+[93m=======================
+alter password (Negative)
+=======================[0m
+[1;34mNew Password : [0m****
+[1;34mRe-enter Password : [0m****
+Semantic Check Fails: The user 'user4' does not exist.
+Failed to change the password for the user 'user4'.
+[1;34mNew Password : [0m*****
+[1;34mRe-enter Password : [0m*****
+The two passwords do not match.
+[92m=======================
+create token
+=======================[0m
+Generate new token successfully
+Generate new token successfully
+Generate new token successfully
+Generate new token successfully
+Generate new token successfully
+Generate new token successfully
+Create token with 60_000 seconds:
+60000
+Create token omit the duration(default for 1 month/2_592_000 seconds):
+2592000
+[93m=======================
+create token (Negative)
+=======================[0m
+{"code":"REST-1101","error":true,"message":"The secret 'abcdefg' is invalid. Please enter a valid one."}
+{"code":"REST-1101","error":true,"message":"The secret 'abcdefg' is invalid. Please enter a valid one."}
+{"code":"REST-1101","error":true,"message":"Invalid parameters, lifetime is not a number.","token":""}
+{"code":"REST-1101","error":true,"message":"Invalid parameters, lifetime is not a number.","token":""}
+{"code":"REST-3101","error":true,"message":"The duration '100' exceeds the maximum limit '10'. Please enter a valid one.","token":""}
+{"code":"REST-3101","error":true,"message":"The duration '103' exceeds the maximum limit '10'. Please enter a valid one.","token":""}
+{"code":"REST-1101","error":true,"message":"The username or password is incorrect. Please enter a valid one."}
+{"code":"REST-1101","error":true,"message":"The username or password is incorrect. Please enter a valid one."}
+[92m=======================
+refresh token
+=======================[0m
+"error":false
+"error":false
+"error":false
+"error":false
+[92m=======================
+check token timestamp
+=======================[0m
+Refresh with 60_000 seconds:
+1654085505 1654025504
+60000
+Refresh omit the duration(default for 1 month/2_592_000 seconds):
+2592000
+Refresh with 60_000 seconds by username and password:
+60000
+Successfully granted roles [querywriter] on graph 'test_graph' to users [user3].
+[93m=======================
+refresh token (Negative)
+=======================[0m
+Refresh token failed, Permission denied.
+"error":false
+"message":"Drop token failed, Permission denied."
+"message":"Drop token successfully."
+{"error":true,"message":"The token 'abc123' is invalid, please provide a valid one."}
+{"code":"REST-1101","error":true,"message":"The secret 'ssssssssssssss' is invalid. Please enter a valid one."}
+{"error":true,"message":"The token 'abc1234' is invalid, please provide a valid one."}
+[92m=======================
+drop token
+=======================[0m
+"message":"Drop token successfully."
+"message":"Drop token successfully."
+[93m=======================
+drop token (Negative)
+=======================[0m
+{"error":true,"message":"The token 'abc123' is invalid, please provide a valid one."}
+{"code":"REST-1101","error":true,"message":"The secret 'ssssssssssssss' is invalid. Please enter a valid one."}
+{"error":true,"message":"The token 'abc123' is invalid, please provide a valid one."}
+[92m=======================
+grant roles
+=======================[0m
+Successfully granted roles [admin] on graph 'test_graph' to users [user1].
+Successfully granted roles [designer] on graph 'test_graph' to users [user2].
+Successfully granted roles [querywriter] on graph 'test_graph' to users [user2, user1, user3].
+Successfully granted roles [queryreader] on graph 'test_graph' to users [user1, user2, user3].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+      - GraphName: test_graph
+
+  - Name: user1
+    - Graph 'test_graph' Roles: admin, queryreader, querywriter
+
+  - Name: user2
+    - Graph 'test_graph' Roles: designer, queryreader, querywriter
+
+  - Name: user3
+    - Graph 'test_graph' Roles: queryreader, querywriter
+      - GraphName: test_graph
+
+  - Name: user_3
+
+[93m=======================
+grant roles (Negative)
+=======================[0m
+Semantic Check Fails: The role 'abc' does not exist.
+Failed to grant roles [abc] on graph 'test_graph' to users [user1].
+Semantic Check Fails: The role 'abc' does not exist.
+Semantic Check Fails: The user 'user9' does not exist.
+Failed to grant roles [abc] on graph 'test_graph' to users [user1, user2, user9].
+Semantic Check Fails: The user 'user9' does not exist.
+Failed to grant roles [admin] on graph 'test_graph' to users [user9].
+Semantic Check Fails: The user 'user9' does not exist.
+Failed to grant roles [admin] on graph 'test_graph' to users [user1, user9].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+      - GraphName: test_graph
+
+  - Name: user1
+    - Graph 'test_graph' Roles: admin, queryreader, querywriter
+
+  - Name: user2
+    - Graph 'test_graph' Roles: designer, queryreader, querywriter
+
+  - Name: user3
+    - Graph 'test_graph' Roles: queryreader, querywriter
+      - GraphName: test_graph
+
+  - Name: user_3
+
+[92m=======================
+revoke roles
+=======================[0m
+Successfully revoked roles [admin] on graph 'test_graph' from users [user1].
+Successfully revoked roles [queryreader] on graph 'test_graph' from users [user1, user2, user3].
+[93m=======================
+revoke roles (Negative)
+=======================[0m
+Semantic Check Fails: The user 'user1' does not have roles [admin] on graph 'test_graph'.
+Semantic Check Fails: The user 'user2' does not have roles [admin] on graph 'test_graph'.
+Semantic Check Fails: The user 'user3' does not have roles [admin] on graph 'test_graph'.
+Failed to revoke roles [admin] on graph 'test_graph' from users [user1, user2, user3].
+Semantic Check Fails: The user 'user4' does not exist.
+Failed to revoke roles [querywriter] on graph 'test_graph' from users [user4, user2, user3].
+Semantic Check Fails: The role 'abc' does not exist.
+Failed to revoke roles [abc] on graph 'test_graph' from users [user1].
+[92m=======================
+cleaning up
+=======================[0m
+Successfully dropped secrets: [srf****o5g].
+Successfully dropped users: [user1].
+Successfully dropped users: [user2, user_3].
+Successfully dropped users: [user3].
+Users:
+* - Name: tigergraph
+    - Global Roles: superuser
+
