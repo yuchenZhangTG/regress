@@ -147,7 +147,6 @@ refresh token
 check token timestamp
 =======================[0m
 Refresh with 60_000 seconds:
-1654085505 1654025504
 60000
 Refresh omit the duration(default for 1 month/2_592_000 seconds):
 2592000
@@ -247,7 +246,6 @@ Failed to revoke roles [abc] on graph 'test_graph' from users [user1].
 [92m=======================
 cleaning up
 =======================[0m
-Successfully dropped secrets: [srf****o5g].
 Successfully dropped users: [user1].
 Successfully dropped users: [user2, user_3].
 Successfully dropped users: [user3].

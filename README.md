@@ -5,21 +5,28 @@
     ```
     . setup/util.sh
     ```
-1. Set up the schema, and load data (require VPN connection)
+1. Set up the schema, and load data.  
     ```sh
     setup/setup.sh
-    ``` 
+    ```
+    Catalog, loading_job tests does not require the data to be loaded
+    ```sh
+    setup/setup.sh -nodata
+    ```
 1. Use the driver to
     * Run any category of tests
         ```sh
+        ./driver.py catalog
         ./driver.py read_query
-        ./driver.py accumClause1
+        ./driver.py accumClause
         ```
     * Single gsql file
         ```sh
+        ./drivery userRole/userToken.sh
         ./driver.py setAccum1.gsql
-        ./driver.py accumClause1/setAccum1.gsql
+        ./driver.py accumClause/setAccum1.gsql
         ```
+1. The above two steps is equivalent to `gdriver [test] --setup`
 
 Other usages of `./driver.py`    
 * `--skip` or `-s` to skip query parse and compile, only run queries and compare.
@@ -29,6 +36,7 @@ Other usages of `./driver.py`
 For example, I use  `./driver.py vSetAssign1 -sim udf` to debug single query or test.
 
 ## Test case guidelines
+### Query tests (read_query, write_query)
 1. Test cases are located in `/*categories*/[test folder]/[query_name].gsql`, test folder name must be unique across different categories
 1. `[query_name].gsql` will be installed in all modes. Secondary extensions `udf`, `single` or `dist` can be used to make query to be installed in a certain mode. The GSQL script to call query ends with `.run`. The output is `.log` and the baseline is `.base`.
 1. The query name in `[query_name].run` must be in format of `[test folder]_[query Name]###`
@@ -43,3 +51,6 @@ For example, I use  `./driver.py vSetAssign1 -sim udf` to debug single query or 
 1. About Comments in query. We use Github internal log to track the last author and modified date. Comments need to address 
     * The tested functionality or documentation link
     * The discovered or tested bug and ticket number
+
+### Shell tests (read_query, write_query)
+1. The shell tests can print Tags  `[GTEST_IB]`, `[GTEST_IE]`
