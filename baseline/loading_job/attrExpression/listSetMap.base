@@ -1,0 +1,34 @@
+[92m=======================
+Test SET() LIST()
+=======================[0m
+Successfully dropped jobs on the graph 'test_graph': [load_list_set].
+Successfully created loading jobs: [load_list_set].
+sourceFileName:Online_POST
+statistics:{'deleteEdge': [], 'deleteVertex': [], 'edge': [], 'failedConditionLine': 0, 'invalidJson': 0, 'notEnoughToken': 0, 'oversizeToken': 0, 'rejectLine': 0, 'validLine': 6, 'vertex': [{'incorrectFixedBinaryLength': 0, 'invalidAttribute': 2, 'invalidAttributeLines': ['1:id', '6:dtList'], 'invalidAttributeLinesData': ['3,3000,30001,0.000003,0.3,2002-03-30,2003-30-30,30000,Over flow in the datatime month,aaaa\n', 'id,int1,int2,double1,double2,datetime1,datetime2,string1,string2,fb4\n'], 'invalidPrimaryId': 1, 'invalidSecondaryId': 0, 'invalidVertexType': 0, 'noIdFound': 0, 'typeName': 'listV', 'validObject': 4}, {'incorrectFixedBinaryLength': 0, 'invalidAttribute': 2, 'invalidAttributeLines': ['1:id', '6:dtSet'], 'invalidAttributeLinesData': ['3,3000,30001,0.000003,0.3,2002-03-30,2003-30-30,30000,Over flow in the datatime month,aaaa\n', 'id,int1,int2,double1,double2,datetime1,datetime2,string1,string2,fb4\n'], 'invalidPrimaryId': 1, 'invalidSecondaryId': 0, 'invalidVertexType': 0, 'noIdFound': 0, 'typeName': 'setV', 'validObject': 4}, {'incorrectFixedBinaryLength': 0, 'invalidAttribute': 2, 'invalidAttributeLines': ['1:id', '6:map1'], 'invalidAttributeLinesData': ['3,3000,30001,0.000003,0.3,2002-03-30,2003-30-30,30000,Over flow in the datatime month,aaaa\n', 'id,int1,int2,double1,double2,datetime1,datetime2,string1,string2,fb4\n'], 'invalidPrimaryId': 1, 'invalidSecondaryId': 0, 'invalidVertexType': 0, 'noIdFound': 0, 'typeName': 'mapV', 'validObject': 4}]}
+v_id:0
+v_type:listV
+attributes:{'dbList': [1000, 1000, 1000, 1000], 'dtList': ['2001-01-01 01:01:01', '2001-12-31 23:59:59', '2001-12-31 23:59:59', '2002-02-02 01:01:01'], 'fb4': 'Bytes 61 61 61 61', 'id': 0, 'intList': [1000, 1000, 1000, 1000], 'sList': ['apple', 'apple', 'dddd', 'invalid ID'], 'tupList1': [], 'tupList2': []}
+v_id:1
+v_type:listV
+attributes:{'dbList': [0.01, 0.1], 'dtList': ['2001-01-01 00:00:00', '2001-01-31 00:00:00'], 'fb4': 'Bytes 61 61 61 61', 'id': 1, 'intList': [20010101, 20010131], 'sList': ['apple', 'this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong string'], 'tupList1': [], 'tupList2': []}
+v_id:2
+v_type:listV
+attributes:{'dbList': [2.02, 2.03], 'dtList': ['2002-02-02 00:00:00', '2002-02-20 00:00:00'], 'fb4': 'Bytes 61 61 61 61', 'id': 2, 'intList': [2000, 2001], 'sList': ['apple', 'pen'], 'tupList1': [], 'tupList2': []}
+v_id:0
+v_type:setV
+attributes:{'dbSet': [1000], 'dtSet': ['2001-01-01 01:01:01', '2001-12-31 23:59:59', '2002-02-02 01:01:01'], 'id': 0, 'intSet': [1000], 'sSet': ['apple', 'apple', 'dddd', 'invalid ID'], 'tupSet1': [], 'tupSet2': []}
+v_id:1
+v_type:setV
+attributes:{'dbSet': [0.01, 0.1], 'dtSet': ['2001-01-01 00:00:00', '2001-01-31 00:00:00'], 'id': 1, 'intSet': [20010101, 20010131], 'sSet': ['apple', 'this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong string'], 'tupSet1': [], 'tupSet2': []}
+v_id:2
+v_type:setV
+attributes:{'dbSet': [2.02, 2.03], 'dtSet': ['2002-02-02 00:00:00', '2002-02-20 00:00:00'], 'id': 2, 'intSet': [2000, 2001], 'sSet': ['apple', 'pen'], 'tupSet1': [], 'tupSet2': []}
+v_id:0
+v_type:mapV
+attributes:{'id': 0, 'map1': {'2001-01-01 01:01:01': 'apple', '2001-12-31 23:59:59': 'invalid ID', '2002-02-02 01:01:01': 'dddd'}, 'map2': {'2001-01-01 01:01:01': 'apple', '2001-12-31 23:59:59': 'invalid ID', '2002-02-02 01:01:01': 'dddd'}, 'map3': {}, 'map4': {}}
+v_id:1
+v_type:mapV
+attributes:{'id': 1, 'map1': {'2001-01-01 00:00:00': 'apple', '2001-01-31 00:00:00': 'this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong string'}, 'map2': {'2001-01-01': 'apple', '2001-01-31': 'this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong string'}, 'map3': {}, 'map4': {}}
+v_id:2
+v_type:mapV
+attributes:{'id': 2, 'map1': {'2002-02-02 00:00:00': 'apple', '2002-02-20 00:00:00': 'pen'}, 'map2': {'2002-02-02': 'apple', '2002-02-20': 'pen'}, 'map3': {}, 'map4': {}}

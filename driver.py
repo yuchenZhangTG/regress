@@ -96,7 +96,7 @@ def getOutputFile(file, mode=''):
   if baseline_file2.is_file():
     baseline_file = baseline_file2
   
-  diff_file = Path(str(output_file).replace('test_case/', 'diff/'))
+  diff_file = Path(str(output_file).replace('output/', 'diff/'))
   return output_file, baseline_file, diff_file
 
 def compare(output_file, baseline_file, diff_file):
@@ -195,6 +195,7 @@ def runShells(file_list, mode):
     if not baseline_file.exists():
       shutil.copy(output_file, baseline_file)
       print(f'    Created baseline {relative(baseline_file)}')
+    print(output_file, baseline_file, diff_file)
     num_diff += compare(output_file, baseline_file, diff_file)
   
   if num_diff == 0:
@@ -259,7 +260,8 @@ for test in tests:
     query = None
   categories = test.split('/')
   print(f'\n{bcolor.GREEN}=========== Run test: {categories[-1]} ============{bcolor.ENDC}')
-  if categories[0] not in ['read_query']:
+  # read_query and write_query were run in three modes
+  if categories[0] not in ['read_query', 'write_query']:
     modes = ['udf']
   for mode in modes:
     os.chdir(test)
