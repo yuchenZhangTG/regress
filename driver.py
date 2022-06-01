@@ -184,19 +184,23 @@ def runShells(file_list, mode):
   print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Run Shell----------{bcolor.ENDC}')
   start = time()
   for shell_file in file_list:
+    print(f'-- {shell_file}')
     output_file, baseline_file, diff_file = getOutputFile(shell_file)
     log_file = str(output_file).replace('.out', '.log')
+    shell_file = Path(shell_file)
+    parent, name  = shell_file.parent, shell_file.name
     subprocess.run(f"""
+      cd {parent};
       . {root}/setup/util.sh; 
-      bash {shell_file} > {log_file}; 
-      gclean {log_file} > {output_file}""",
+      bash {name} > {log_file};
+      gclean {log_file} > {output_file};
+      cd - > /dev/null""",
       shell=True, executable="/bin/bash")
     
     num_diff = 0
     if not baseline_file.exists():
       shutil.copy(output_file, baseline_file)
       print(f'    Created baseline {relative(baseline_file)}')
-    print(output_file, baseline_file, diff_file)
     num_diff += compare(output_file, baseline_file, diff_file)
   
   if num_diff == 0:
@@ -263,11 +267,12 @@ for test in tests:
   
   categories = test.split('/')
   c1 = categories[1]
-  print(c1)
+  # set up schema
   if args.setup:
     sarg = '-nodata' if c1 in ['catalog', 'loading_job'] else ''
     print(f'\n{bcolor.GREEN}=========== ./setup {sarg} ============{bcolor.ENDC}')
     subprocess.run(f"{root}/setup/setup.sh {sarg};", shell=True, executable="/bin/bash")
+   
   print(f'\n{bcolor.GREEN}=========== Run test: {categories[-1]} ============{bcolor.ENDC}')
   # read_query and write_query were run in three modes
   if c1 not in ['read_query', 'write_query']:

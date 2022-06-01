@@ -36,6 +36,7 @@ Other usages of `./driver.py`
 For example, I use  `./driver.py vSetAssign1 -sim udf` to debug single query or test.
 
 ## Test case guidelines
+### Query tests (read_query, write_query)
 1. Test cases are located in `/*categories*/[test folder]/[query_name].gsql`, test folder name must be unique across different categories
 1. `[query_name].gsql` will be installed in all modes. Secondary extensions `udf`, `single` or `dist` can be used to make query to be installed in a certain mode. The GSQL script to call query ends with `.run`. The output is `.log` and the baseline is `.base`.
 1. The query name in `[query_name].run` must be in format of `[test folder]_[query Name]###`
@@ -50,3 +51,6 @@ For example, I use  `./driver.py vSetAssign1 -sim udf` to debug single query or 
 1. About Comments in query. We use Github internal log to track the last author and modified date. Comments need to address 
     * The tested functionality or documentation link
     * The discovered or tested bug and ticket number
+
+### Shell tests (read_query, write_query)
+1. The shell tests can print Tags  `[GTEST_IB]`, `[GTEST_IE]`
