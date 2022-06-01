@@ -1,0 +1,26 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_sumaccum
+
+CREATE OR REPLACE QUERY AccumClause1_SumAccum101 (DATETIME date, DATETIME date2) {
+  SumAccum<UINT>   @@sumUint;
+  SumAccum<INT>    @@sumInt;
+  SumAccum<FLOAT>  @@sumFloat;
+  SumAccum<DOUBLE> @@sumDouble;
+  SumAccum<STRING> @@sumString;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2
+    ACCUM
+      @@sumUint += 1,
+      @@sumInt += e.creationEpoch,
+      @@sumFloat += e.creationEpoch / 3,
+      @@sumDouble += e.creationEpoch * 1.0 / 21,
+      @@sumString += t.title;
+
+  PRINT @@sumUint;
+  PRINT @@sumInt;
+  PRINT @@sumFloat;
+  PRINT @@sumDouble;
+  PRINT @@sumString;
+  #Problem: String added without order, hard to compare
+
+}
