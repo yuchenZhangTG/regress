@@ -1,0 +1,6 @@
+id,int1,int2,double1,double2,datetime1,datetime2,string1,string2,fb4
+0,1000,1000,1e3,1e3,2001-01-01 01:01:01,2001-12-31 23:59:59,apple,apple,aaaa
+0,1000,1000,1e3,1e3,2002-02-02 01:01:01,2001-12-31 23:59:59,dddd,invalid ID,aaaa
+1,20010101,20010131,1e-1,1e-2,2001-01-01,2001-01-31,apple,this is a very loooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooong string,aaaa
+2,2000,2001,2.02,2.03,2002-02-02,2002-02-20,apple,pen,aaaa
+3,3000,30001,0.000003,0.3,2002-03-30,2003-30-30,30000,Over flow in the datatime month,aaaa
