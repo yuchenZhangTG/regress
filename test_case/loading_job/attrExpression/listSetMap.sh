@@ -25,7 +25,7 @@ curl -s -X POST --data-binary @./data.csv 'http://localhost:9000/ddl/test_graph?
 curl -s -X GET "http://localhost:9000/graph/test_graph/vertices/listV/0" | sort_json
 curl -s -X GET "http://localhost:9000/graph/test_graph/vertices/listV/1" | sort_json
 curl -s -X GET "http://localhost:9000/graph/test_graph/vertices/listV/2" | sort_json
-curl -s -X GET "http://localhost:9000/graph/test_graph/vertices/setV/0" | sort_json
+curl -s -X GET "http://localhost:9000/graph/test_graph/vertices/setV/0" | sort_json # GLE-3406 - Duplicate element when loading SET attribute
 curl -s -X GET "http://localhost:9000/graph/test_graph/vertices/setV/1" | sort_json
 curl -s -X GET "http://localhost:9000/graph/test_graph/vertices/setV/2" | sort_json
 curl -s -X GET "http://localhost:9000/graph/test_graph/vertices/mapV/0" | sort_json
