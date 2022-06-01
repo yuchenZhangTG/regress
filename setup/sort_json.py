@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import sys
+import json
 def json_to_tupList(x):
   if type(x) is dict:
     return ('__DICT__', [(k,json_to_tupList(v)) for k,v in x.items()])
@@ -27,9 +28,9 @@ def sort_tupleList(x):
 def decode_tupleList(x):
   if type(x) is tuple and len(x) == 2:
     if x[0] == '__LIST__':
-      x = [decode_tupleList(v) for v in x[1]]
+      return [decode_tupleList(v) for v in x[1]]
     if x[0] == '__DICT__':
-      x = {k:decode_tupleList(v) for k,v in x[1]}
+      return {k:decode_tupleList(v) for k,v in x[1]}
   return x
 
 def sort_json(json_str):
@@ -45,7 +46,9 @@ def sort_json(json_str):
           rows.append(f'{k}:{sorted_json}')
     return '\n'.join(rows)
   else:
-    return json_dict['message']
+    code = json_dict['code'] if 'code' in json_dict else ''
+    message = json_dict['message'] if 'message' in json_dict else ''
+    return f'ERROR ({code}): {message}'
 
 if __name__ == '__main__':
   for line in sys.stdin:

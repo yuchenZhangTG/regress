@@ -9,12 +9,12 @@ from time import time
 import json
 import shutil
 import uuid
+from functools import partial
 from setup.sort_json import sort_json
 parser = argparse.ArgumentParser(description='GSQL regress test driver.')
 parser.add_argument('test', type=str, help='directory name of the test')
 parser.add_argument('--skip', '-s', action='store_true', help='skip query parse and compile, only run queries and compare')
 parser.add_argument('--info', '-i', action='store_true', help='info mode, print results to terminal (default write to `output/` folder).')
-parser.add_argument('--real', '-r', action='store_true', help='show comparison difference in realtime when running queries (default compare results after query run)')
 parser.add_argument('--time', '-t', action='store_true', help='print parse, install and run time')
 parser.add_argument('--update', '-u', action='store_true', help='force update baselines')
 parser.add_argument('--mode', '-m', type=str, choices = ['udf', 'single', 'dist', 'all'], default = 'all', help='run queries in a specified mode')
@@ -77,70 +77,27 @@ def parse(file):
   print(f'-- {file}')
   subprocess.run(["gsql", "-g", "test_graph", str(file)])
 
-def parseFiles(file_list, mode):
-  if mode == 'dist':
-    dist_tmp.mkdir(parents=True, exist_ok=True)  
-    with Pool(processes=threads) as pool:
-      pool.map(parseDist, file_list)
-    #shutil.rmtree(dist_tmp)
-  else:
-    with Pool(processes=threads) as pool:
-      pool.map(parse, file_list)
-
-def installQueries(mode):
-  if mode == 'single':
-    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -SINGLE ALL"])
-  else:
-    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
-
-def getOutputFile(file, mode):
+def getOutputFile(file, mode=''):
   file = file.resolve()
   parent, name = file.parent, file.name
   output_parent = Path(str(parent).replace('test_case/', 'output/')) 
   output_parent.mkdir(parents=True, exist_ok=True)
   names = name.split('.')
-  output_name = name.replace('.run', f'.{mode}.out') if len(name) == 2 else name.replace('.run', f'.{mode}.out')
+  if name.endswith('.run'):
+    output_name = name.replace('.run', f'.{mode}.out') if len(name) == 2 else name.replace('.run', f'.{mode}.out')
+  elif name.endswith('.sh'):
+    output_name = name.replace('.sh', '.out')
   output_file = output_parent / output_name
   baseline_parent = Path(str(parent).replace('test_case/', 'baseline/'))
   baseline_parent.mkdir(parents=True, exist_ok=True)
-  baseline_file = baseline_parent / name.replace('.run', '.base')
-  baseline_file2 = baseline_parent / name.replace('.run', f'.{mode}.base')
+  baseline_file = baseline_parent / name.replace('.run', '.base').replace('.sh', '.base')
   # overwrite the generic baseline
+  baseline_file2 = baseline_parent / name.replace('.run', f'.{mode}.base')
   if baseline_file2.is_file():
     baseline_file = baseline_file2
-  diff_file = Path(str(file).replace('test_case/', 'diff/'))
-  return output_file, baseline_file, diff_file
-
-def runQuery(file, mode):
-  print(f'-- {file}')
-  output_file, baseline_file, diff_file = getOutputFile(file, mode)
-  if not args.info:
-    print(f'Writing results to output/')
-    fo = open(output_file,'w')
-  with open(file) as fi:
-    for line in fi:
-      cmd_out = subprocess.run(["gsql", "-g", "test_graph", line], stdout=subprocess.PIPE).stdout.decode()
-      # if output is json
-      if cmd_out.startswith('{'):
-        cmd_out = sort_json(cmd_out)
-      if args.info:
-        print(line.rstrip('\n'))
-        print(cmd_out.rstrip('\n')+'\n')
-      else:
-        fo.write(line.rstrip('\n')+'\n')
-        fo.write(cmd_out.rstrip('\n')+'\n\n')
-  if args.info:
-    return  
-  fo.close()
-  if not baseline_file.exists():
-    shutil.copy(output_file, baseline_file)
-    print(f'    Created baseline {relative(baseline_file)}')
-  elif args.real:
-    compare(output_file, baseline_file, diff_file)
   
-def runQueries(file_list):
-  with Pool(processes=threads) as pool:
-    pool.map(runQuery, file_list)
+  diff_file = Path(str(output_file).replace('test_case/', 'diff/'))
+  return output_file, baseline_file, diff_file
 
 def compare(output_file, baseline_file, diff_file):
   cmd_out = subprocess.run(["diff", str(output_file), str(baseline_file)], stdout=subprocess.PIPE)
@@ -163,55 +120,130 @@ def compare(output_file, baseline_file, diff_file):
   print()
   return cmd_out.returncode
 
-def compare_files(file_list, mode):
-  num_diff = 0
-  for file in file_list:
-    output_file, baseline_file, diff_file = getOutputFile(file, mode)
-    num_diff += compare(output_file, baseline_file, diff_file)
+def runQuery(mode, file):
+  print(f'-- {file}')
+  output_file, baseline_file, diff_file = getOutputFile(file, mode)
+  if not args.info:
+    print(f'Writing results to output/')
+    fo = open(output_file,'w')
+  with open(file) as fi:
+    for line in fi:
+      cmd_out = subprocess.run(["gsql", "-g", "test_graph", line], stdout=subprocess.PIPE).stdout.decode()
+      # if output is json
+      if cmd_out.startswith('{'):
+        cmd_out = sort_json(cmd_out)
+      if args.info:
+        print(line.rstrip('\n'))
+        print(cmd_out.rstrip('\n')+'\n')
+      else:
+        fo.write(line.rstrip('\n')+'\n')
+        fo.write(cmd_out.rstrip('\n')+'\n\n')
+  if not args.info:
+    fo.close()
+  if not baseline_file.exists():
+    shutil.copy(output_file, baseline_file)
+    print(f'    Created baseline {relative(baseline_file)}')
+  return compare(output_file, baseline_file, diff_file)
+   
+def parseFiles(file_list, mode):
+  print(f'{bcolor.GREEN}------------ {mode.upper()}: Parse  ------------{bcolor.ENDC}')    
+  start = time()
+  if mode == 'dist':
+    dist_tmp.mkdir(parents=True, exist_ok=True)  
+    with Pool(processes=threads) as pool:
+      pool.map(parseDist, file_list)
+    #shutil.rmtree(dist_tmp)
+  else:
+    with Pool(processes=threads) as pool:
+      pool.map(parse, file_list)
+  return time() - start
+  
+def installQueries(mode):
+  print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Install ------------{bcolor.ENDC}')
+  start = time()
+  if mode == 'single':
+    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY -SINGLE ALL"])
+  else:
+    subprocess.run(["gsql", "-g", "test_graph", "INSTALL QUERY ALL"])
+  return time() - start
+  
+def runQueries(file_list, mode):
+  print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Run GSQL----------{bcolor.ENDC}')
+  start = time()
+  with Pool(processes=threads) as pool:
+    num_diffs = pool.map(partial(runQuery, mode), file_list)
+  num_diff = sum(num_diffs)
   if num_diff == 0:
     print(f'    {bcolor.GREEN}{mode.upper()} : PASS{bcolor.ENDC}\n')
   else:
     print(f'    {bcolor.FAIL}{mode.upper()} : FAIL - {num_diff} files are differet{bcolor.ENDC}\n')
+  return time() - start
+  
+def runShells(file_list, mode):
+  print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Run Shell----------{bcolor.ENDC}')
+  start = time()
+  for shell_file in file_list:
+    output_file, baseline_file, diff_file = getOutputFile(shell_file)
+    log_file = str(output_file).replace('.out', '.log')
+    subprocess.run(f"""
+      . {root}/setup/util.sh; 
+      bash {shell_file} > {log_file}; 
+      gclean {log_file} > {output_file}""",
+      shell=True, executable="/bin/bash")
+    
+    num_diff = 0
+    if not baseline_file.exists():
+      shutil.copy(output_file, baseline_file)
+      print(f'    Created baseline {relative(baseline_file)}')
+    num_diff += compare(output_file, baseline_file, diff_file)
+  
+  if num_diff == 0:
+    print(f'    {bcolor.GREEN}{mode.upper()} : PASS{bcolor.ENDC}\n')
+  else:
+    print(f'    {bcolor.FAIL}{mode.upper()} : FAIL - {num_diff} files are differet{bcolor.ENDC}\n')
+  return time() - start
 
 def runTest(mode, query):
-  filesInstall = []
-  filesRun = []
-  if query:
+  if query and query.endswith('.gsql'):
     filesInstall.append(Path(query))
     filesRun.append(Path(query.replace('.gsql','.run')))
+    filesShell = []
+  if query and query.endswith('.sh'):
+    filesInstall = []
+    filesRun = []
+    filesShell = [Path(query)]
   else:
+    filesInstall = []
+    filesRun = []
+    filesShell = list(Path('./').glob('*.sh'))  
     for f in Path('./').glob('**/*'):
       filterFiles(f, mode, filesInstall, filesRun)
   
-  if not args.skip:
-    print(f'{bcolor.GREEN}------------ {mode.upper()}: Parse  ------------{bcolor.ENDC}')
-    start = time()
-    parseFiles(filesInstall, mode)
-    parse_time = time() - start
-    print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Install ------------{bcolor.ENDC}')
-    start = time()
-    installQueries(mode)
-    install_time = time() - start
-  print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Run ------------{bcolor.ENDC}')
-  start = time()
-  for q in filesRun:
-    runQuery(q, mode)
-  run_time = time() - start
-  if not args.real:
-    print(f'\n\n{bcolor.GREEN}--------- {mode.upper()}: Compare ------------{bcolor.ENDC}')
-    compare_files(filesRun, mode)
+  if len(filesRun) > 0:
+    if not args.skip:
+      timeParse = parseFiles(filesInstall, mode)
+      timeInstall = installQueries(mode)  
+    timeRun = runQueries(filesRun, mode)
+
+  if len(filesShell) > 0:
+    runShells(filesShell, mode)
 
   if args.time:
     print(f'\n{bcolor.GREEN}============ {mode.upper()}: Summary ============{bcolor.ENDC}')
-    if not args.skip:
-      print(f'Parse:   {parse_time:.3f} s')
-      print(f'Install: {install_time:.3f} s')
-    print(f'Run:     {run_time:.3f} s')
+    if len(filesRun) > 0:
+      if not args.skip:
+        print(f'Parse:\t{timeParse:.3f} s')
+        print(f'Install:\t{timeInstall:.3f} s')
+      print(f'Query:\t{timeRun:.3f} s')
+    if len(filesShell) > 0:
+      print(f'Shell:\t{timeShell:.3f} s')
 
 """
 ================ Main Program =======================
 ./driver.py read_query
 ./driver.py test_case
+./driver.py test_case/test1.gsql
+./driver.py test_case/test1.sh
 ===========================================================
 """
 os.chdir(root)
@@ -226,7 +258,9 @@ for test in tests:
   else:
     query = None
   categories = test.split('/')
-  print(f'\n{bcolor.GREEN}=========== Run test: {categories[-1]} ============{bcolor.ENDC}')  
+  print(f'\n{bcolor.GREEN}=========== Run test: {categories[-1]} ============{bcolor.ENDC}')
+  if categories[0] not in ['read_query']:
+    modes = ['udf']
   for mode in modes:
     os.chdir(test)
     runTest(mode, query)
