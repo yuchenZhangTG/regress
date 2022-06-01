@@ -1,1 +1,1 @@
-RUN QUERY sampleClause1_sampleEdge101("2010-01-03")
+RUN QUERY sampleClause_sampleEdge101("2010-01-03")

@@ -1,6 +1,6 @@
 # https://docs.tigergraph.com/gsql-ref/current/querying/select-statement/select-statement-v1#_sample_clause
 # SYNTAX v2 not supported yet
-CREATE OR REPLACE QUERY  sampleClause1_sampleEdge101(DATETIME date) SYNTAX v1 {
+CREATE OR REPLACE QUERY  sampleClause_sampleEdge101(DATETIME date) SYNTAX v1 {
    MaxAccum<INT> @@maxId;
    SetAccum<INT> @@toId;
    SetAccum<INT> @@toId2;
