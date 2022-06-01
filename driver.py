@@ -13,6 +13,7 @@ from functools import partial
 from setup.sort_json import sort_json
 parser = argparse.ArgumentParser(description='GSQL regress test driver.')
 parser.add_argument('test', type=str, help='directory name of the test')
+parser.add_argument('--setup', action='store_true', help='Perform setup in driver')
 parser.add_argument('--skip', '-s', action='store_true', help='skip query parse and compile, only run queries and compare')
 parser.add_argument('--info', '-i', action='store_true', help='info mode, print results to terminal (default write to `output/` folder).')
 parser.add_argument('--time', '-t', action='store_true', help='print parse, install and run time')
@@ -42,10 +43,12 @@ def relative(file: Path):
   return file.relative_to(root)
 
 # collect files in certain mode, files are collected in filesInstall, filesRun
-def filterFiles(f:Path, mode, filesInstall, filesRun):
+def filterFiles(f:Path, mode, filesInstall, filesRun, filesShell):
   names = f.name.split('.')
   if names[-1] == 'run':
-      filesRun.append(f)
+    filesRun.append(f)
+  elif names[-1] == 'sh':
+    filesShell.append(f)
   elif len(names) == 2 and names[-1] == 'gsql':
     filesInstall.append(f) 
   if len(names) >= 3:
@@ -203,20 +206,17 @@ def runShells(file_list, mode):
   return time() - start
 
 def runTest(mode, query):
+  filesInstall = []
+  filesRun = []
+  filesShell = []    
   if query and query.endswith('.gsql'):
     filesInstall.append(Path(query))
     filesRun.append(Path(query.replace('.gsql','.run')))
-    filesShell = []
   if query and query.endswith('.sh'):
-    filesInstall = []
-    filesRun = []
     filesShell = [Path(query)]
   else:
-    filesInstall = []
-    filesRun = []
-    filesShell = list(Path('./').glob('*.sh'))  
     for f in Path('./').glob('**/*'):
-      filterFiles(f, mode, filesInstall, filesRun)
+      filterFiles(f, mode, filesInstall, filesRun, filesShell)
   
   if len(filesRun) > 0:
     if not args.skip:
@@ -238,15 +238,19 @@ def runTest(mode, query):
       print(f'Shell:\t{timeShell:.3f} s')
 
 """
-================ Main Program =======================
+====================== Main Program =======================
 ./driver.py read_query
-./driver.py test_case
-./driver.py test_case/test1.gsql
-./driver.py test_case/test1.sh
+./driver.py accumClause
+./driver.py accumClause/setAccum1.gsql
+./driver.py userRole/userToken.sh
 ===========================================================
 """
 os.chdir(root)
-tests = glob(f'test_case/**/{args.test}', recursive=True) 
+if args.test == 'all':
+  categories = ['catalog', 'loading_job', 'read_query']
+  tests = [f'test_case/{c}' for c in categories]
+else:
+  tests = glob(f'test_case/**/{args.test}', recursive=True)
 print(f'{bcolor.GREEN}Tests to run:')
 print(f'  --' + '\n  --'.join(tests) + bcolor.ENDC)
 
@@ -256,11 +260,18 @@ for test in tests:
     test, query = str(test_file.parent), test_file.name
   else:
     query = None
+  
   categories = test.split('/')
+  c1 = categories[1]
+  print(c1)
+  if args.setup:
+    sarg = '-nodata' if c1 in ['catalog', 'loading_job'] else ''
+    print(f'\n{bcolor.GREEN}=========== ./setup {sarg} ============{bcolor.ENDC}')
+    subprocess.run(f"{root}/setup/setup.sh {sarg};", shell=True, executable="/bin/bash")
   print(f'\n{bcolor.GREEN}=========== Run test: {categories[-1]} ============{bcolor.ENDC}')
   # read_query and write_query were run in three modes
-  if categories[0] not in ['read_query', 'write_query']:
-    modes = ['udf']
+  if c1 not in ['read_query', 'write_query']:
+    modes = ['shell']
   for mode in modes:
     os.chdir(test)
     runTest(mode, query)

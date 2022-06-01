@@ -5,21 +5,28 @@
     ```
     . setup/util.sh
     ```
-1. Set up the schema, and load data (require VPN connection)
+1. Set up the schema, and load data.  
     ```sh
     setup/setup.sh
-    ``` 
+    ```
+    Catalog, loading_job tests does not require the data to be loaded
+    ```sh
+    setup/setup.sh -nodata
+    ```
 1. Use the driver to
     * Run any category of tests
         ```sh
+        ./driver.py catalog
         ./driver.py read_query
-        ./driver.py accumClause1
+        ./driver.py accumClause
         ```
     * Single gsql file
         ```sh
+        ./drivery userRole/userToken.sh
         ./driver.py setAccum1.gsql
-        ./driver.py accumClause1/setAccum1.gsql
+        ./driver.py accumClause/setAccum1.gsql
         ```
+1. The above two steps is equivalent to `gdriver [test] --setup`
 
 Other usages of `./driver.py`    
 * `--skip` or `-s` to skip query parse and compile, only run queries and compare.

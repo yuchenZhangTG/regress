@@ -139,7 +139,6 @@ current=`date "+%Y-%m-%d %H:%M:%S"`
 timeStamp=`date -d "$current" +%s`
 currentTimeStamp=$(((timeStamp*1000+10#`date "+%N"`/1000000)/1000))
 operationTimeStamp=$(curl -w "\n" -s -X PUT -d "{\"secret\": \"${secret}\", \"token\": \"${token}\", \"lifetime\": \"60000\"}" "localhost:8123/requesttoken" | jq '.expiration')
-echo $operationTimeStamp $currentTimeStamp
 lifeTimeComparetor 60000 $operationTimeStamp $currentTimeStamp
 
 # omit the lifetime section, default value is 1 month
@@ -218,7 +217,9 @@ echoTitle 'cleaning up'
 # drop token
 curl -s -X DELETE -d "{\"secret\": \"${secret}\", \"token\": \"${token}\"}" "localhost:8123/requesttoken" | grep -oh "doesn't exist"
 # drop secret
+echo "[GTEST_IB]"
 gsql -g test_graph "drop secret $secret"
+echo "[GTEST_IE]"
 
 # drop users
 gsql "drop user user1"
