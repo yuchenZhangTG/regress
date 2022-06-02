@@ -21,7 +21,11 @@ alias sort_json="$regress/setup/sort_json.py"
 alias add_ignore="sed 's/^/[GTEST_IL]/g'" # prepend [GTEST_IL] to all lines
 # remove lines between [GTEST_IB] and [GTEST_IE]; remove lines starting with [GTEST_IL]
 alias gclean="sed '/^\[GTEST_IB\]/,/^\[GTEST_IE\]/d;/^\[GTEST_IL\]/d;'"
-
+# show author and date
+showAuthor() {
+  out=$(git blame $1| tail -1 | awk '{print $3,$4,$5}')
+  echo "Author: ${out:1:-1}"
+}
 # After 'gadmin start' done, GSQL#1 may be in WARMUP status, wait until gsql is up
 wait_until_gsql_up () {
   local NUM_RETRY=0
@@ -47,11 +51,11 @@ check_stat() {
   echo "Wait for the database to rebuild delta..."
   curl -s -H "GSQL-TIMEOUT:2500000" "http://127.0.0.1:9000/rebuildnow" > /dev/null
   echo "Vertex statistics:"
-  curl -X POST "http://127.0.0.1:9000/builtins/test_graph" -d  '{"function":"stat_vertex_number","type":"*"}'
+  curl -s -X POST "http://127.0.0.1:9000/builtins/test_graph" -d  '{"function":"stat_vertex_number","type":"*"}'
   echo
   echo
   echo "Edge statistics:"
-  curl -X POST "http://127.0.0.1:9000/builtins/test_graph" -d  '{"function":"stat_edge_number","type":"*"}'
+  curl -s -X POST "http://127.0.0.1:9000/builtins/test_graph" -d  '{"function":"stat_edge_number","type":"*"}'
   echo
 }
 

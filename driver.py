@@ -111,7 +111,7 @@ def compare(output_file, baseline_file, diff_file):
   if args.update:
     shutil.copy(output_file, baseline_file)
     print(f'Updated {r2}')
-    return cmd_out.returncode
+    return 0
   diff_file.parent.mkdir(exist_ok=True, parents=True)
   with open(diff_file,'w') as f:
     f.write(cmd_out.stdout.decode())
@@ -146,7 +146,8 @@ def runQuery(mode, file):
   if not baseline_file.exists():
     shutil.copy(output_file, baseline_file)
     print(f'    Created baseline {relative(baseline_file)}')
-  return compare(output_file, baseline_file, diff_file)
+  if not args.info:
+    return compare(output_file, baseline_file, diff_file)
    
 def parseFiles(file_list, mode):
   print(f'{bcolor.GREEN}------------ {mode.upper()}: Parse  ------------{bcolor.ENDC}')    

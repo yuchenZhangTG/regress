@@ -1,0 +1,136 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/select-statement/select-statement-v1#_sample_clause
+# SYNTAX v2 not supported yet
+# Sample results are random, only check the size of the results
+# SAMPLE expr TARGET: expr value converage
+CREATE OR REPLACE QUERY  sampleClause_sampleTarget101(DATETIME date, INT num) SYNTAX v1 {
+  MaxAccum<INT> @@maxId;
+  SetAccum<INT> @@toId;
+  SetAccum<INT> @@toId2;
+  # expr is a parameter
+  P = SELECT s FROM Person:s
+    WHERE s.creationDate < date;
+  
+  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+    SAMPLE num TARGET WHEN s.outdegree() > 10
+    ACCUM
+      @@maxId += s.id,
+      @@toId += t.id;
+  
+  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+    SAMPLE num TARGET WHEN s.outdegree() > 10
+    POST-ACCUM
+      @@toId2 += t.id;
+  
+  PRINT P.size();
+  # PRINT T1.size();
+  # PRINT @@toId2.size();
+}
+# SAMPLE expr TARGET: expr type converage
+CREATE OR REPLACE QUERY  sampleClause_sampleTarget102(DATETIME date) SYNTAX v1 {
+  MaxAccum<INT> @@maxId;
+  SetAccum<INT> @@toId;
+  SetAccum<INT> @@toId2;
+  # expr is a constant
+  UINT num2=2;
+  P = SELECT s FROM Person:s
+    WHERE s.creationDate < date;
+  
+  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+    SAMPLE num2 TARGET WHEN s.outdegree() > 10
+    ACCUM
+      @@maxId += s.id,
+      @@toId += t.id;
+  
+  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+    SAMPLE num2 TARGET WHEN s.outdegree() > 10
+    POST-ACCUM
+      @@toId2 += t.id;
+  
+  PRINT P.size();
+  # expr is an Accum
+  SumAccum<INT> @@sum = 0;
+  P = SELECT s FROM (Person):s
+    WHERE s.creationDate < date
+    ACCUM @@sum += 1;
+
+  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+    SAMPLE (@@sum*@@sum/2) TARGET WHEN s.outdegree() > 10
+    ACCUM
+      @@maxId += s.id,
+      @@toId += t.id;
+  
+  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+    SAMPLE (@@sum*@@sum/2) TARGET WHEN s.outdegree() > 10
+    POST-ACCUM
+      @@toId2 += t.id;
+  
+  PRINT P.size();
+}
+
+# SAMPLE expr % TARGET PINED: expr value converage
+CREATE OR REPLACE QUERY  sampleClause_sampleTarget103(DATETIME date, INT percentage) SYNTAX v1 {
+  MaxAccum<INT> @@maxId;
+  SetAccum<INT> @@toId;
+  SetAccum<INT> @@toId2;
+  #expr is a parameter
+  P = SELECT s FROM Person:s
+    WHERE s.creationDate < date;
+
+  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+    SAMPLE percentage % TARGET PINNED WHEN s.outdegree() > 10
+    ACCUM
+        @@maxId += s.id,
+        @@toId += t.id;
+  
+  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+    SAMPLE percentage % TARGET PINNED WHEN s.outdegree() > 10
+    POST-ACCUM
+        @@toId2 += t.id;
+  
+  PRINT P.size();
+  PRINT S1.size();
+}
+
+# SAMPLE expr % TARGET PINED: expr type converage
+CREATE OR REPLACE QUERY  sampleClause_sampleTarget104(DATETIME date) SYNTAX v1 {
+  MaxAccum<INT> @@maxId;
+  SetAccum<INT> @@toId;
+  SetAccum<INT> @@toId2;
+  #expr is a constant
+  UINT percentage2 = 2;
+  P = SELECT s FROM Person:s
+    WHERE s.creationDate < date;
+
+  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+    SAMPLE percentage2 % TARGET PINNED WHEN s.outdegree() > 10
+    ACCUM
+        @@maxId += s.id,
+        @@toId += t.id;
+  
+  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+    SAMPLE percentage2 % TARGET PINNED WHEN s.outdegree() > 10
+    POST-ACCUM
+        @@toId2 += t.id;
+  
+  PRINT P.size();
+  PRINT S1.size();
+  # expr is an Accum
+  SumAccum<INT> @@sum = 0;
+  P = SELECT s FROM (Person):s
+    WHERE s.creationDate < date
+    ACCUM @@sum += 1;
+
+  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+    SAMPLE (@@sum*@@sum/2) % TARGET PINNED WHEN s.outdegree() > 10
+    ACCUM
+        @@maxId += s.id,
+        @@toId += t.id;
+  
+  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+    SAMPLE (@@sum*@@sum/2) % TARGET PINNED WHEN s.outdegree() > 10
+    POST-ACCUM
+        @@toId2 += t.id;
+  
+  PRINT P.size();
+  PRINT S1.size();  
+}
