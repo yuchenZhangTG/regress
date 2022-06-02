@@ -1,3 +1,59 @@
-RUN QUERY sampleClause_sampleEdge101("2010-01-03")
+RUN QUERY sampleClause_sampleEdge101("2010-01-03", 1)
+P.size():3
+S1.size():3
+@@toId.size():11
+T1.size():11
+@@toId2.size():11
 
+RUN QUERY sampleClause_sampleEdge101("2010-01-03", 2)
+P.size():3
+S1.size():3
+@@toId.size():13
+T1.size():13
+@@toId2.size():13
+
+RUN QUERY sampleClause_sampleEdge101("2010-01-03", -1)
+P.size():3
+S1.size():3
+
+RUN QUERY sampleClause_sampleEdge101("2010-01-03", "1")
+P.size():3
+S1.size():3
+@@toId.size():11
+T1.size():11
+@@toId2.size():11
+
+RUN QUERY sampleClause_sampleEdge101("2010-01-03", 1.234) # negative
+Arguments for the parameter 'num' must be INT64, but invalid value(s) given: [1.234]
+
+RUN QUERY sampleClause_sampleEdge102("2010-01-03")
+P.size():3
+S1.size():3
+@@toId.size():13
+T1.size():13
+@@toId2.size():13
+P.size():3
+S1.size():3
+@@toId.size():17
+T1.size():17
+@@toId2.size():17
+
+RUN QUERY sampleClause_sampleEdge103("2010-01-03", 10)
+P.size():3
+
+RUN QUERY sampleClause_sampleEdge103("2010-01-03", 20)
+P.size():3
+
+RUN QUERY sampleClause_sampleEdge103("2010-01-03", -10)
+P.size():3
+
+RUN QUERY sampleClause_sampleEdge103("2010-01-03", "10")
+P.size():3
+
+RUN QUERY sampleClause_sampleEdge103("2010-01-03", 12.34)  # negative
+Arguments for the parameter 'percentage' must be INT64, but invalid value(s) given: [12.34]
+
+RUN QUERY sampleClause_sampleEdge104("2010-01-03")
+P.size():3
+P.size():3
 

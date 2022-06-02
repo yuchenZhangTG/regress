@@ -1,27 +1,141 @@
 # https://docs.tigergraph.com/gsql-ref/current/querying/select-statement/select-statement-v1#_sample_clause
 # SYNTAX v2 not supported yet
-CREATE OR REPLACE QUERY  sampleClause_sampleEdge101(DATETIME date) SYNTAX v1 {
+# Sample results are random, only check the size of the results
+# SAMPLE expr EDGE: expr value coverage
+CREATE OR REPLACE QUERY  sampleClause_sampleEdge101(DATETIME date, INT num) SYNTAX v1 {
    MaxAccum<INT> @@maxId;
    SetAccum<INT> @@toId;
    SetAccum<INT> @@toId2;
    P = SELECT s FROM (Person):s
      WHERE s.creationDate < date;
-
-   S1 = SELECT s FROM P:s -(:e)- :t
-      SAMPLE 1 EDGE WHEN s.outdegree() > 10
+   # expr is a parameter
+   S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+      SAMPLE num EDGE WHEN s.outdegree() > 10
       ACCUM
          @@maxId += s.id,
          @@toId += t.id;
    
-   T1 = SELECT t FROM P:s -(:e)- :t
-      SAMPLE 1 EDGE WHEN s.outdegree() > 10
+   T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+      SAMPLE num EDGE WHEN s.outdegree() > 10
       POST-ACCUM
          @@toId2 += t.id;
    
-   # Results are random, not able to compare
-   #PRINT P[P.lastName];
-   #PRINT T1[T1.id];
-   #PRINT @@maxId;
-   #PRINT @@toId;
-   #PRINT @@toId2;
+   PRINT P.size();
+   PRINT S1.size();
+   IF num > 0 THEN # skip compare if expr is negative
+      PRINT @@toId.size();
+      PRINT T1.size();
+      PRINT @@toId2.size();
+   END;
+}
+# SAMPLE expr EDGE: expr type coverage
+CREATE OR REPLACE QUERY  sampleClause_sampleEdge102(DATETIME date) SYNTAX v1 {
+   MaxAccum<INT> @@maxId;
+   SetAccum<INT> @@toId;
+   SetAccum<INT> @@toId2;
+   # expr is a constant
+   INT num2 = 2;
+   SumAccum<INT> @@sum = 0;
+   P = SELECT s FROM (Person):s
+     WHERE s.creationDate < date
+     ACCUM @@sum += 1;
+
+   S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+      SAMPLE num2 EDGE WHEN s.outdegree() > 10
+      ACCUM
+         @@maxId += s.id,
+         @@toId += t.id;
+   
+   T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+      SAMPLE num2 EDGE WHEN s.outdegree() > 10
+      POST-ACCUM
+         @@toId2 += t.id;
+   
+   PRINT P.size();
+   PRINT S1.size();
+   PRINT @@toId.size();
+   PRINT T1.size();
+   PRINT @@toId2.size();
+   @@toId.clear();
+   @@toId2.clear();
+   # expr is an Accum
+   S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+      SAMPLE (@@sum*@@sum/2) EDGE WHEN s.outdegree() > 10
+      ACCUM
+         @@maxId += s.id,
+         @@toId += t.id;
+   
+   T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+      SAMPLE (@@sum*@@sum/2) EDGE WHEN s.outdegree() > 10
+      POST-ACCUM
+         @@toId2 += t.id;
+   
+   PRINT P.size();
+   PRINT S1.size();
+   PRINT @@toId.size();
+   PRINT T1.size();
+   PRINT @@toId2.size();
+}
+
+# SAMPLE expr % EDGE: expr value coverage
+CREATE OR REPLACE QUERY  sampleClause_sampleEdge103(DATETIME date, INT percentage) SYNTAX v1 {
+   MaxAccum<INT> @@maxId;
+   SetAccum<INT> @@toId;
+   SetAccum<INT> @@toId2;
+   # expr is a parameter
+   P = SELECT s FROM (Person):s
+     WHERE s.creationDate < date;
+
+   S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+      SAMPLE percentage % EDGE WHEN s.outdegree() > 10
+      ACCUM
+         @@maxId += s.id,
+         @@toId += t.id;
+   
+   T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+      SAMPLE percentage % EDGE WHEN s.outdegree() > 10
+      POST-ACCUM
+         @@toId2 += t.id;
+   
+   PRINT P.size();
+}
+
+# SAMPLE expr % EDGE: expr type coverage
+CREATE OR REPLACE QUERY  sampleClause_sampleEdge104(DATETIME date) SYNTAX v1 {
+   MaxAccum<INT> @@maxId;
+   SetAccum<INT> @@toId;
+   SetAccum<INT> @@toId2;
+   # expr is a constant
+   UINT percentage2 = 2;
+   SumAccum<INT> @@sum = 0;
+   P = SELECT s FROM (Person):s
+     WHERE s.creationDate < date
+     ACCUM @@sum += 1;
+
+   S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+      SAMPLE percentage2 % EDGE WHEN s.outdegree() > 10
+      ACCUM
+         @@maxId += s.id,
+         @@toId += t.id;
+   
+   T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+      SAMPLE percentage2 % EDGE WHEN s.outdegree() > 10
+      POST-ACCUM
+         @@toId2 += t.id;
+
+   PRINT P.size();
+   
+   # expr is an Accum
+   S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+      SAMPLE (@@sum*@@sum/2) % EDGE WHEN s.outdegree() > 10
+      ACCUM
+         @@maxId += s.id,
+         @@toId += t.id;
+   
+   T1 = SELECT t FROM P:s -(LIKES:e)-> :t
+      SAMPLE (@@sum*@@sum/2) % EDGE WHEN s.outdegree() > 10
+      POST-ACCUM
+         @@toId2 += t.id;
+
+   PRINT P.size();
 }

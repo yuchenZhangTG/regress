@@ -1,7 +1,7 @@
 # TigerGraph GSQL Integral test suites
 ## Usage
 1. Pre-requisites: TigerGraph, python3 
-1. load utility functions, this provide utilities `cdregress`, `cdtest`, `ggsql`
+1. load utility functions, this provide [utility functions](#Utility-Functions)
     ```
     . setup/util.sh
     ```
@@ -54,4 +54,21 @@ For example, I use  `./driver.py vSetAssign1 -sim udf` to debug single query or 
 
 ### Shell tests (catalog, loading_job, etc)
 1. The shell tests can print Tags  `[GTEST_IB]`, `[GTEST_IE]` and `[GTEST_IL]`. The output is dumped to `.log` file first. Then the files is processed by `gclean file.log > file.out`. The contents between `[GTEST_IB]` and `[GTEST_IE]` are removed and the lines beginning with `GTEST_IL` are removed.
-1. 
+1. The json output in shells can be sorted using `sort_json` function. 
+
+## Utility Functions
+The following utility functions will be available after source `setup/util.sh`
+* Utility functions for navitation
+    * `cdregress` - go the regress home folder `regress`
+    * `cdtc` - go to `regress/test_case`
+    * `cdsetup` - go to `regress/setup`
+    * `cddata` - go to the LDBC data set `regress/setup/ldbc_snb_data-sf0.1/social_network`
+* Utility functions for processing the Log
+    * `sort_json` - Sort json output, for exmple `echo '{"error":false, "results":[{"key":1}]}' | sort_json`
+    * `gclean` - Remove contents between `[GTEST_IB]` and `[GTEST_IE]` and remove lines starting with `[GTEST_IL]`
+* Utility functions for running tests
+    * `ggsql` is equivalent to `gsql -g test_graph`
+    * `gdriver` call the `./driver.py`
+* Utility for test design
+    * `check_stat` - print the statistics for the data, can be used with `check_stat | sort_json`
+    * `echoTitle` and `echoNegative` - print formatted headers for postive and negative cases, respectively.

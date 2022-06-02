@@ -1,0 +1,12 @@
+RUN QUERY sampleClause_sampleTarget101("2010-01-03", 1)
+RUN QUERY sampleClause_sampleTarget101("2010-01-03", 2)
+RUN QUERY sampleClause_sampleTarget101("2010-01-03", -1)
+RUN QUERY sampleClause_sampleTarget101("2010-01-03", "1")
+RUN QUERY sampleClause_sampleTarget101("2010-01-03", 1.234) # negative
+RUN QUERY sampleClause_sampleTarget102("2010-01-03")
+RUN QUERY sampleClause_sampleTarget103("2010-01-03", 10)
+RUN QUERY sampleClause_sampleTarget103("2010-01-03", 10)
+RUN QUERY sampleClause_sampleTarget103("2010-01-03", -10)
+RUN QUERY sampleClause_sampleTarget103("2010-01-03", "10")
+RUN QUERY sampleClause_sampleTarget103("2010-01-03", -12.34)  # negative
+RUN QUERY sampleClause_sampleTarget104("2010-01-03")
