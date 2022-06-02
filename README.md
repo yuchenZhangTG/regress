@@ -37,18 +37,18 @@ For example, I use  `./driver.py vSetAssign1 -sim udf` to debug single query or 
 
 ## Test case guidelines
 ### Query tests (read_query, write_query)
-1. Test cases are located in `/*categories*/[test folder]/[query_name].gsql`, test folder name must be unique across different categories
-1. `[query_name].gsql` will be installed in all modes. Secondary extensions `udf`, `single` or `dist` can be used to make query to be installed in a certain mode. The GSQL script to call query ends with `.run`. The output is `.log` and the baseline is `.base`.
-1. The query name in `[query_name].run` must be in format of `[test folder]_[query Name]###`
-1. Length of each print statment is required to be less than 500. Please use attribute `creationDate` or `creationEpoch` to filter vertices. The creation date for LDBC SNB data is nearly uniformly distributed between 2010-01-01 and 2013-01-01. For example, you can create a query as below and tune the parameter values to get the output length in a seasonale length. You can use `./driver.py [test folder]/[query_name].gsql -sim udf` to print results in terminal and tune the output length. To finish use use `./driver.py [test folder]/[query_name].gsql -sum udf` to update the baselines.
+1. Query tests are in `test_case/read_query` (Read-Only query, no data modification) and `test_case/write_query`. 
+1. During the test, the driver will goes to the parent folder of GSQL files. The parent folder name must be unique. The query name must use format `[parent folder]_[query Name][Number]` so that the query name does not collide with each other.
+1. Secondary extensions `udf`, `single` or `dist` can be used to make query to be installed in a certain mode. Files with a single extension `gsql` are installed in all three modes. The GSQL script to invoke query ends with `.run`. The output is `.out` and the baseline is `.base`. JSON outputs are sorted and formated before writing to `.out` files, the `.out` file should be exactly the same as the baseline file.
+1. Utility function `check_stat` can check the data statistics. The data set has dominant number of `Comment` vertices. Writing queries on `Comment` vertices require preformance consideration.
+1. Length of each print statment is recommended to be less than 500. Please use attribute `creationDate` or `creationEpoch` to filter vertices. The creation date for LDBC SNB data is nearly uniformly distributed between 2010-01-01 and 2013-01-01. For example, you can create a query as below and tune the parameter values to get the output length in a seasonale length. You can use `./driver.py [test folder]/[query_name].gsql -sim udf` to print results in terminal and tune the output length. To finish use use `./driver.py [test folder]/[query_name].gsql -sum udf` to update the baselines.
     ```gsql
     CREATE OR REPLACE QUERY q (datetime date) {
         S = SELECT s FROM tuplePerson:s WHERE s.creationDate < to_datetime(date)
     }
     RUN QUERY q("2010-01-02")
     ```
-1. Utility function `check_stat` can check the data statistics. The data set has dominant number of `Comment` vertices. Writing queries on `Comment` vertices require preformance consideration.
-1. About Comments in query. We use Github internal log to track the last author and modified date. Comments need to address 
+1. GSQL files should include comments to address 
     * The tested functionality or documentation link
     * The discovered or tested bug and ticket number
 
