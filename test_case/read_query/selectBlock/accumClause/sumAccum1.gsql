@@ -3,7 +3,6 @@
 CREATE OR REPLACE QUERY AccumClause1_SumAccum101 (DATETIME date, DATETIME date2) {
   SumAccum<UINT>   @@sumUint;
   SumAccum<INT>    @@sumInt;
-  SumAccum<FLOAT>  @@sumFloat;
   SumAccum<DOUBLE> @@sumDouble;
   SumAccum<STRING> @@sumString;
 
@@ -12,15 +11,13 @@ CREATE OR REPLACE QUERY AccumClause1_SumAccum101 (DATETIME date, DATETIME date2)
     ACCUM
       @@sumUint += 1,
       @@sumInt += e.creationEpoch,
-      @@sumFloat += e.creationEpoch / 3,
       @@sumDouble += e.creationEpoch * 1.0 / 21,
       @@sumString += t.title;
 
   PRINT @@sumUint;
   PRINT @@sumInt;
-  PRINT @@sumFloat;
   PRINT @@sumDouble;
-  PRINT @@sumString;
+  #PRINT @@sumString;
   #Problem: String added without order, hard to compare
 
 }
