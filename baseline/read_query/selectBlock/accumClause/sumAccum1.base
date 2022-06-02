@@ -1,5 +1,6 @@
-RUN QUERY AccumClause1_SumAccum101("2011-01-01", "2011-01-03")
+RUN QUERY AccumClause_sumAccum101("2011-01-01", "2011-01-03")
 @@sumUint:67
 @@sumInt:86694082396316
-@@sumDouble:4128289637919.8096
+@@sumFloat:86.6941
+@@sumDouble:4.128290e+12
 

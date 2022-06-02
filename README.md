@@ -52,5 +52,6 @@ For example, I use  `./driver.py vSetAssign1 -sim udf` to debug single query or 
     * The tested functionality or documentation link
     * The discovered or tested bug and ticket number
 
-### Shell tests (read_query, write_query)
-1. The shell tests can print Tags  `[GTEST_IB]`, `[GTEST_IE]`
+### Shell tests (catalog, loading_job, etc)
+1. The shell tests can print Tags  `[GTEST_IB]`, `[GTEST_IE]` and `[GTEST_IL]`. The output is dumped to `.log` file first. Then the files is processed by `gclean file.log > file.out`. The contents between `[GTEST_IB]` and `[GTEST_IE]` are removed and the lines beginning with `GTEST_IL` are removed.
+1. 
