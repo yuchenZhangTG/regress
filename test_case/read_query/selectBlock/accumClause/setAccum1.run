@@ -1,2 +1,2 @@
-RUN QUERY AccumClause_SetAccum101("2010-01-02")
-RUN QUERY AccumClause_SetAccum102("2010-01-24")
+RUN QUERY AccumClause_setAccum101("2010-01-02")
+RUN QUERY AccumClause_setAccum102("2010-01-24")

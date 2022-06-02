@@ -171,7 +171,7 @@ def installQueries(mode):
   return time() - start
   
 def runQueries(file_list, mode):
-  print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Run GSQL----------{bcolor.ENDC}')
+  print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Run Queries----------{bcolor.ENDC}')
   start = time()
   with Pool(processes=threads) as pool:
     num_diffs = pool.map(partial(runQuery, mode), file_list)
@@ -214,11 +214,11 @@ def runShells(file_list, mode):
 def runTest(mode, query):
   filesInstall = []
   filesRun = []
-  filesShell = []    
+  filesShell = []
   if query and query.endswith('.gsql'):
     filesInstall.append(Path(query))
     filesRun.append(Path(query.replace('.gsql','.run')))
-  if query and query.endswith('.sh'):
+  elif query and query.endswith('.sh'):
     filesShell = [Path(query)]
   else:
     for f in Path('./').glob('**/*'):

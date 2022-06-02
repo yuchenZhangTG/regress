@@ -30,7 +30,13 @@ def decode_tupleList(x):
     if x[0] == '__LIST__':
       return [decode_tupleList(v) for v in x[1]]
     if x[0] == '__DICT__':
-      return {k:decode_tupleList(v) for k,v in x[1]}
+      return {k:decode_tupleList(v) for k,v in x[1]} # Since Python 3.6, dict keeps the order
+  if type(x) is float:
+    if x > 1e-8 and x < 1e8:
+      return f'{x:1.4f}'
+    else:
+      x = f'{x:1.6e}'
+      return x
   return x
 
 def sort_json(json_str):

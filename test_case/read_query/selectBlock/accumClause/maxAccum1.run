@@ -1,1 +1,1 @@
-RUN QUERY AccumClause_MaxAccum101("2011-01-01", "2011-01-03")
+RUN QUERY AccumClause_maxAccum101("2011-01-01", "2011-01-03")

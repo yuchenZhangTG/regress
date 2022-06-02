@@ -1,6 +1,6 @@
 # https://docs.tigergraph.com/gsql-ref/current/querying/select-statement/select-statement-v1
 # setAccum in vertex step
-CREATE OR REPLACE QUERY AccumClause_SetAccum101 (datetime date) {
+CREATE OR REPLACE QUERY AccumClause_setAccum101 (datetime date) {
   SetAccum<VERTEX> @@setVertex;
   SetAccum<INT>    @@setInt;
   SetAccum<UINT>   @@setUint;
@@ -30,7 +30,7 @@ CREATE OR REPLACE QUERY AccumClause_SetAccum101 (datetime date) {
 }
 
 # setAccum in edge step
-CREATE OR REPLACE QUERY AccumClause_SetAccum102 (DATETIME date) {
+CREATE OR REPLACE QUERY AccumClause_setAccum102 (DATETIME date) {
   SetAccum<VERTEX> @@setVertex;
   SetAccum<EDGE> @@setEdge;
   SetAccum<INT>    @@setInt;

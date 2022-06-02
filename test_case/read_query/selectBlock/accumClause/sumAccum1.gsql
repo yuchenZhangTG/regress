@@ -1,6 +1,6 @@
 # https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_sumaccum
-
-CREATE OR REPLACE QUERY AccumClause1_SumAccum101 (DATETIME date, DATETIME date2) {
+# sumAccum for different data types in edge block
+CREATE OR REPLACE QUERY AccumClause_sumAccum101 (DATETIME date, DATETIME date2) {
   SumAccum<UINT>   @@sumUint;
   SumAccum<INT>    @@sumInt;
   SumAccum<FLOAT>  @@sumFloat;
@@ -12,7 +12,7 @@ CREATE OR REPLACE QUERY AccumClause1_SumAccum101 (DATETIME date, DATETIME date2)
     ACCUM
       @@sumUint += 1,
       @@sumInt += e.creationEpoch,
-      @@sumFloat += e.creationEpoch / 3,
+      @@sumFloat += e.creationEpoch * 1.0 / 1000000000000,
       @@sumDouble += e.creationEpoch * 1.0 / 21,
       @@sumString += t.title;
 
@@ -20,7 +20,5 @@ CREATE OR REPLACE QUERY AccumClause1_SumAccum101 (DATETIME date, DATETIME date2)
   PRINT @@sumInt;
   PRINT @@sumFloat;
   PRINT @@sumDouble;
-  PRINT @@sumString;
-  #Problem: String added without order, hard to compare
-
+  #PRINT @@sumString.size(); # not supported
 }
