@@ -28,6 +28,8 @@ threads = cpu_count()
 modes = ['udf', 'single', 'dist'] if args.mode == 'all' else [args.mode]
 dist_tmp = Path('/tmp/distQuery/')
 
+#testing commit and push
+
 class bcolor:
   FAIL = '\033[91m'
   GREEN = '\033[92m'

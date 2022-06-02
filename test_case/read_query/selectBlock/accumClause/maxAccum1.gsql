@@ -1,0 +1,35 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_minaccum_maxaccum
+
+CREATE OR REPLACE QUERY AccumClause_MaxAccum101 (DATETIME date, DATETIME date2) {
+  SumAccum<UINT>   @@sumUint;
+
+  MinAccum<UINT>   @@minUint;
+  MinAccum<INT>    @@minInt;
+  MinAccum<FLOAT>  @@minFloat;
+  MinAccum<DOUBLE> @@minDouble;
+
+  MaxAccum<UINT>   @@maxUint;
+  MaxAccum<INT>    @@maxInt;
+  MaxAccum<FLOAT>  @@maxFloat;
+  MaxAccum<DOUBLE> @@maxDouble;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2
+    ACCUM
+      @@sumUint += 1,
+      @@minInt += e.creationEpoch,
+      @@minFloat += e.creationEpoch / 3,
+      @@minDouble += e.creationEpoch * 1.0 / 21,
+      @@maxInt += e.creationEpoch,
+      @@maxFloat += e.creationEpoch / 3,
+      @@maxDouble += e.creationEpoch * 1.0 / 21;
+
+  PRINT @@sumUint;
+  PRINT @@minInt;
+  PRINT @@minFloat;
+  PRINT @@minDouble;
+  PRINT @@maxInt;
+  PRINT @@maxFloat;
+  PRINT @@maxDouble;
+
+}
