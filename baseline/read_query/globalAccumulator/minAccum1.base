@@ -1,6 +1,6 @@
 RUN QUERY AccumClause_minAccum101("2011-01-01", "2011-01-03")
 @@sumUint:67
 @@minInt:1293842047609
-@@minFloat:1293.8420
-@@minDouble:6.161153e+10
+@@minFloat:1293.842
+@@minDouble:61611530000.0
 

@@ -6,10 +6,10 @@
 echo "[GTEST_IB]"
 #$regress/setup/setup.sh -nodata
 gsql 'CLEAR GRAPH STORE -HARD'
+ggsql 'DROP JOB load_list_set'
 echo "[GTEST_IE]"
 
-echoTitle 'Test SET() LIST()'
-ggsql 'DROP JOB load_list_set'
+echoTitle 'Test SET() LIST() MAP()'
 # GLE-3403 - Default value is not supported for fixed binary
 # TUPLE in LIST/SET/MAP is not allowed LIST(TUP($1,$3,$5), TUP($2,$4,$6))
 # 1,2 - INT | 3,4 - DOUBLE | 5,6 - DATETIME | 7,8 - STRING | 9 FB(4)

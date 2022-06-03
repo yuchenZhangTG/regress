@@ -4,8 +4,7 @@
 # SAMPLE expr TARGET: expr value converage
 CREATE OR REPLACE QUERY  sampleClause_sampleTarget101(DATETIME date, INT num) SYNTAX v1 {
   MaxAccum<INT> @@maxId;
-  SetAccum<INT> @@toId;
-  SetAccum<INT> @@toId2;
+  SetAccum<INT> @@toId, @@toId2;
   # expr is a parameter
   P = SELECT s FROM Person:s
     WHERE s.creationDate < date;
@@ -18,6 +17,7 @@ CREATE OR REPLACE QUERY  sampleClause_sampleTarget101(DATETIME date, INT num) SY
   
   T1 = SELECT t FROM P:s -(LIKES:e)-> :t
     SAMPLE num TARGET WHEN s.outdegree() > 10
+    ACCUM @@ops += 1
     POST-ACCUM
       @@toId2 += t.id;
   
@@ -35,14 +35,11 @@ CREATE OR REPLACE QUERY  sampleClause_sampleTarget102(DATETIME date) SYNTAX v1 {
   P = SELECT s FROM Person:s
     WHERE s.creationDate < date;
   
-  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+  T1 = SELECT s FROM P:s -(LIKES:e)-> :t
     SAMPLE num2 TARGET WHEN s.outdegree() > 10
     ACCUM
       @@maxId += s.id,
-      @@toId += t.id;
-  
-  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
-    SAMPLE num2 TARGET WHEN s.outdegree() > 10
+      @@toId += t.id
     POST-ACCUM
       @@toId2 += t.id;
   
@@ -53,14 +50,11 @@ CREATE OR REPLACE QUERY  sampleClause_sampleTarget102(DATETIME date) SYNTAX v1 {
     WHERE s.creationDate < date
     ACCUM @@sum += 1;
 
-  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+  T1 = SELECT s FROM P:s -(LIKES:e)-> :t
     SAMPLE (@@sum*@@sum/2) TARGET WHEN s.outdegree() > 10
     ACCUM
       @@maxId += s.id,
-      @@toId += t.id;
-  
-  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
-    SAMPLE (@@sum*@@sum/2) TARGET WHEN s.outdegree() > 10
+      @@toId += t.id
     POST-ACCUM
       @@toId2 += t.id;
   
@@ -101,36 +95,28 @@ CREATE OR REPLACE QUERY  sampleClause_sampleTarget104(DATETIME date) SYNTAX v1 {
   P = SELECT s FROM Person:s
     WHERE s.creationDate < date;
 
-  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+  T1 = SELECT s FROM P:s -(LIKES:e)-> :t
     SAMPLE percentage2 % TARGET PINNED WHEN s.outdegree() > 10
     ACCUM
         @@maxId += s.id,
-        @@toId += t.id;
-  
-  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
-    SAMPLE percentage2 % TARGET PINNED WHEN s.outdegree() > 10
+        @@toId += t.id
     POST-ACCUM
         @@toId2 += t.id;
   
   PRINT P.size();
-  PRINT S1.size();
   # expr is an Accum
   SumAccum<INT> @@sum = 0;
   P = SELECT s FROM (Person):s
     WHERE s.creationDate < date
     ACCUM @@sum += 1;
 
-  S1 = SELECT s FROM P:s -(LIKES:e)-> :t
+  T1 = SELECT s FROM P:s -(LIKES:e)-> :t
     SAMPLE (@@sum*@@sum/2) % TARGET PINNED WHEN s.outdegree() > 10
     ACCUM
         @@maxId += s.id,
-        @@toId += t.id;
-  
-  T1 = SELECT t FROM P:s -(LIKES:e)-> :t
-    SAMPLE (@@sum*@@sum/2) % TARGET PINNED WHEN s.outdegree() > 10
+        @@toId += t.id
     POST-ACCUM
         @@toId2 += t.id;
   
   PRINT P.size();
-  PRINT S1.size();  
 }

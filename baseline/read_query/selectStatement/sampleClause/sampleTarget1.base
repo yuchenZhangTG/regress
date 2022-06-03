@@ -1,14 +1,22 @@
 RUN QUERY sampleClause_sampleTarget101("2010-01-03", 1)
 P.size():3
+@@ops:1
+T1.size():1
 
 RUN QUERY sampleClause_sampleTarget101("2010-01-03", 2)
 P.size():3
+@@ops:6
+T1.size():6
 
 RUN QUERY sampleClause_sampleTarget101("2010-01-03", -1)
 P.size():3
+@@ops:34
+T1.size():33
 
 RUN QUERY sampleClause_sampleTarget101("2010-01-03", "1")
 P.size():3
+@@ops:3
+T1.size():3
 
 RUN QUERY sampleClause_sampleTarget101("2010-01-03", 1.234) # negative
 Arguments for the parameter 'num' must be INT64, but invalid value(s) given: [1.234]
@@ -38,7 +46,5 @@ Arguments for the parameter 'percentage' must be INT64, but invalid value(s) giv
 
 RUN QUERY sampleClause_sampleTarget104("2010-01-03")
 P.size():3
-S1.size():3
 P.size():3
-S1.size():3
 

@@ -32,11 +32,10 @@ def decode_tupleList(x):
     if x[0] == '__DICT__':
       return {k:decode_tupleList(v) for k,v in x[1]} # Since Python 3.6, dict keeps the order
   if type(x) is float:
-    if x > 1e-8 and x < 1e8:
-      return f'{x:1.4f}'
-    else:
-      x = f'{x:1.6e}'
-      return x
+    if x > 1e-4 and x < 1e4:
+      return float(f'{x:1.4f}')
+    else: # for float larger than 1e4 digits, we only keep 6 digits
+      return float(f'{x:1.6e}')
   return x
 
 def sort_json(json_str):
@@ -49,7 +48,7 @@ def sort_json(json_str):
           tupleList = json_to_tupList(v)
           sorted_tuple = sort_tupleList(tupleList)
           sorted_json = decode_tupleList(sorted_tuple)
-          rows.append(f'{k}:{sorted_json}')
+          rows.append(f'{k}:{json.dumps(sorted_json)}')
     return '\n'.join(rows)
   else:
     code = json_dict['code'] if 'code' in json_dict else ''

@@ -1,5 +1,5 @@
 RUN QUERY AccumClause_andAccum101("2011-01-01", "2011-01-03")
 @@sumUint:67
-@@andResult:False
-@@andResult1:True
+@@andResult:false
+@@andResult1:true
 

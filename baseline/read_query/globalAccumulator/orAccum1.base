@@ -1,5 +1,5 @@
 RUN QUERY AccumClause_orAccum101("2011-01-01", "2011-01-03")
 @@sumUint:67
-@@orResult:False
-@@orResult1:True
+@@orResult:false
+@@orResult1:true
 
