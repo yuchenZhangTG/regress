@@ -1,0 +1,26 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_bitwiseandaccum_bitwiseoraccum
+# BitwiseAndAccum for different data types in edge block
+CREATE OR REPLACE QUERY AccumClause_BitwiseAndAccum101 (DATETIME date, DATETIME date2) {
+  SumAccum<UINT>   @@sumUint;
+
+  AndAccum @@andResult; //default value = TRUE
+  AndAccum @@andResult1;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2
+    ACCUM
+      @@sumUint += 1
+
+    #If result is even += True, if odd += False
+    POST-ACCUM (s)
+    IF (@@sumUint%2) == 0 THEN
+      @@andResult += TRUE
+    ELSE
+      @@andResult += FALSE
+      END;
+    @@andResult1 += TRUE ;
+
+  PRINT @@sumUint;
+  PRINT @@andResult;
+  PRINT @@andResult1;
+}

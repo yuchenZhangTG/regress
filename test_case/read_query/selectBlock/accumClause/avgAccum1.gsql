@@ -1,0 +1,23 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_avgaccum
+# avgAccum for different data types in edge block
+CREATE OR REPLACE QUERY AccumClause_avgAccum101 (DATETIME date, DATETIME date2) {
+  SumAccum<UINT>   @@sumUint;
+
+  #The data type of an AvgAccum variable is not declared; The output is always DOUBLE type.
+  AvgAccum @@avgInt;
+  AvgAccum @@avgFloat;
+  AvgAccum @@avgDouble;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2
+    ACCUM
+      @@sumUint += 1,
+      @@avgInt += e.creationEpoch,
+      @@avgFloat += e.creationEpoch * 1.0 / 1000000000.0,
+      @@avgDouble += e.creationEpoch * 1.0 / 21;
+
+  PRINT @@sumUint;
+  PRINT @@avgInt;
+  PRINT @@avgFloat;
+  PRINT @@avgDouble;
+}
