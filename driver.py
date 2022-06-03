@@ -127,7 +127,6 @@ def runQuery(mode, file):
   print(f'-- {file}')
   output_file, baseline_file, diff_file = getOutputFile(file, mode)
   if not args.info:
-    print(f'Writing results to output/')
     fo = open(output_file,'w')
   with open(file) as fi:
     for line in fi:
@@ -174,6 +173,7 @@ def installQueries(mode):
 def runQueries(file_list, mode):
   print(f'\n\n{bcolor.GREEN}------------ {mode.upper()}: Run Queries----------{bcolor.ENDC}')
   start = time()
+  if not args.info: print(f'Writing results to output/')
   with Pool(processes=threads) as pool:
     num_diffs = pool.map(partial(runQuery, mode), file_list)
   num_diff = sum(num_diffs)
