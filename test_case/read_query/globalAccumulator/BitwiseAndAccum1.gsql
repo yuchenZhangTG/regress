@@ -3,24 +3,32 @@
 CREATE OR REPLACE QUERY AccumClause_BitwiseAndAccum101 (DATETIME date, DATETIME date2) {
   SumAccum<UINT>   @@sumUint;
 
-  AndAccum @@andResult; //default value = TRUE
-  AndAccum @@andResult1;
+  BitwiseAndAccum @@BitwiseandResult; // default value = 64-bits of 1 = -1 INT
+  BitwiseAndAccum @@BitwiseandResult1;
 
   S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
     WHERE e.creationDate > date AND e.creationDate < date2
     ACCUM
-      @@sumUint += 1
+      @@sumUint += e.creationEpoch
 
-    #If result is even += True, if odd += False
     POST-ACCUM (s)
-    IF (@@sumUint%2) == 0 THEN
-      @@andResult += TRUE
-    ELSE
-      @@andResult += FALSE
-      END;
-    @@andResult1 += TRUE ;
+    @@BitwiseandResult += @@sumUint,
+    @@BitwiseandResult += @@sumUint,
+    @@BitwiseandResult1 += 9999,
+    @@BitwiseandResult1 += 9998;
 
   PRINT @@sumUint;
-  PRINT @@andResult;
-  PRINT @@andResult1;
+  PRINT @@BitwiseandResult;
+  PRINT @@BitwiseandResult1;
+
+  # Testing methods of BitwiseAndAccum
+  PRINT @@BitwiseandResult1.cardinality();
+  PRINT @@BitwiseandResult1.get(1);
+  @@BitwiseandResult1.set(0,TRUE);
+  PRINT @@BitwiseandResult1;
+  @@BitwiseandResult1.flip(1);
+  PRINT @@BitwiseandResult1;
+  @@BitwiseandResult1.flip(0 , 15);
+  PRINT @@BitwiseandResult1;
+
 }
