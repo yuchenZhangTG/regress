@@ -6,8 +6,6 @@ CREATE OR REPLACE QUERY AccumClause_BitwiseOrAccum101 (DATETIME date, DATETIME d
   BitwiseOrAccum @@BitwiseorResult; // default value = 64-bits of 1 = -1 INT
   BitwiseOrAccum @@BitwiseorResult1;
 
-  ListAccum<INT> @@int_list_accum;
-
   S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
     WHERE e.creationDate > date or e.creationDate < date2
     ACCUM
