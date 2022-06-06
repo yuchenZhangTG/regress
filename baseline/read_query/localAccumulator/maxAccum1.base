@@ -1,0 +1,6 @@
+RUN QUERY AccumClause_maxAccum101("2011-01-01", "2011-01-03")
+@@sumUint:67
+@@maxInt:1294011008921
+@@maxFloat:1294.011
+@@maxDouble:61619570000.0
+
