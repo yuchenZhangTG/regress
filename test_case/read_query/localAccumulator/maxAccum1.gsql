@@ -1,0 +1,66 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_sumaccum
+# sumAccum for different data types in edge block
+CREATE OR REPLACE QUERY localAccum_maxAccum101(DATETIME date, DATETIME date2) {
+  MaxAccum<UINT>   @maxDefault;
+  MaxAccum<UINT>   @maxUint;
+  MaxAccum<INT>    @maxInt;
+  MaxAccum<FLOAT>  @maxFloat;
+  MaxAccum<DOUBLE> @maxDouble;
+  MaxAccum<STRING> @maxString;
+
+  MaxAccum<UINT> @@maxResult;
+
+  SumAccum<UINT> @@globalSum;
+  SumAccum<UINT> @@globalDefault;
+
+  #threads = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startEpoch AND endEpoch;
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
+    ACCUM
+      s.@maxUint += 1,
+      s.@maxInt += e.creationEpoch,
+      s.@maxFloat += e.creationEpoch * 1.0 / 1000000000000,
+      s.@maxDouble += e.creationEpoch * 1.0 / 21,
+      s.@maxString += t.title,
+      @@globalSum += 1
+    #PRINT s.@threadCount;
+        POST-ACCUM(s) @@maxResult += s.@maxUint, @@globalDefault += s.@maxDefault;
+        PRINT S [S.@maxUint, S.@maxInt, S.@maxFloat, S.@maxDouble, S.@maxString];
+
+
+  PRINT @@globalSum;
+  PRINT @@maxResult;
+  PRINT @@globalDefault;
+}
+
+CREATE OR REPLACE QUERY localAccum_maxAccum102(DATETIME date, DATETIME date2) {
+  MaxAccum<UINT>   @maxDefault;
+  MaxAccum<UINT>   @maxUint;
+  MaxAccum<INT>    @maxInt;
+  MaxAccum<FLOAT>  @maxFloat;
+  MaxAccum<DOUBLE> @maxDouble;
+  MaxAccum<STRING> @maxString;
+  MaxAccum<UINT> @@maxResult;
+  SumAccum<UINT> @@globalSum;
+  SumAccum<UINT> @@globalDefault;
+
+  ListAccum<DOUBLE> @@int_list_accum;
+
+
+
+  #threads = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startEpoch AND endEpoch;
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
+    ACCUM
+      s.@maxDouble +=  e.creationEpoch * 1.0 / 21.5,
+      s.@maxString += t.title,
+      @@globalSum += 1
+    #PRINT s.@threadCount;
+        POST-ACCUM(s) @@maxResult += s.@maxDouble, @@globalDefault += s.@maxDefault;
+        PRINT S [S.@maxDouble, S.@maxString];
+
+
+  PRINT @@globalSum;
+  PRINT @@maxResult;
+  PRINT @@globalDefault;
+}

@@ -1,7 +1,4 @@
-RUN QUERY AccumClause_orAccum101("2011-01-01", "2011-01-03")
-@@sumUint:67
-@@orResult:false
-@@orResult1:true
-@@orResult2:false
-@@orResult3:false
+RUN QUERY localAccum_orAccum101("2011-01-01", "2011-01-03")
+S:[{"attributes": {"S.@orResult": true, "S.@orResult1": true, "S.@orResult2": false}, "v_id": "10995116278353", "v_type": "tupPerson"}, {"attributes": {"S.@orResult": true, "S.@orResult1": true, "S.@orResult2": false}, "v_id": "10995116279390", "v_type": "tupPerson"}]
+@@sumUint:2
 

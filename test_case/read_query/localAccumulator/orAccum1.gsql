@@ -1,0 +1,32 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_andaccum_oraccum
+# orAccum in edge block
+CREATE OR REPLACE QUERY localAccum_orAccum101 (DATETIME date, DATETIME date2) {
+  SumAccum<UINT>   @@sumUint;
+
+  OrAccum @orResult; //default value = FALSE
+  OrAccum @orResult1;
+  OrAccum @orResult2;
+  OrAccum @orResult3;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
+    ACCUM
+      @@sumUint += 1
+
+      #Negative test, no type can be inferred for @@orResult3 += t.title
+      #@@orResult3 += t.title
+
+    #If result is even += True, if odd += False
+    POST-ACCUM (s)
+    s.@orResult1 += TRUE, // F or F == F
+    s.@orResult2 += FALSE, // F or T == T
+    IF (@@sumUint%2) == 0 THEN
+      s.@orResult += TRUE
+    ELSE
+      s.@orResult += FALSE
+      END;
+
+    PRINT S [S.@orResult, S.@orResult1, S.@orResult2];
+
+  PRINT @@sumUint;
+}
