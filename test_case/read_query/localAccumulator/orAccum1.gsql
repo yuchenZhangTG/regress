@@ -1,5 +1,12 @@
-# https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_andaccum_oraccum
-# orAccum in edge block
+#######################################################################
+# Target: (Positive) test sample local orAccum
+# Description: test local orAccum with multiple assign
+#            SYNTAX v2 not supported yet
+#            Sample results are random, only check the size of the results
+# Designer: Darren Wang
+# Date: 2022-06-06
+# Doc: https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_andaccum_oraccum
+########################################################################
 CREATE OR REPLACE QUERY localAccum_orAccum101 (DATETIME date, DATETIME date2) {
   SumAccum<UINT>   @@sumUint;
 
@@ -14,7 +21,7 @@ CREATE OR REPLACE QUERY localAccum_orAccum101 (DATETIME date, DATETIME date2) {
       @@sumUint += 1
 
       #Negative test, no type can be inferred for @@orResult3 += t.title
-      #@@orResult3 += t.title
+      #s.@orResult3 += t.title
 
     #If result is even += True, if odd += False
     POST-ACCUM (s)
