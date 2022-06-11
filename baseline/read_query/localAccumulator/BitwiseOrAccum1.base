@@ -1,5 +1,10 @@
 RUN QUERY localAccum_BitwiseOrAccum101("2011-01-01", "2011-01-02")
-S:[{"attributes": {"S.@BitwiseorResult": "0000000000000000000000010010110100111111000000011111111111101111", "S.@BitwiseorResult.cardinality()": 27, "S.@BitwiseorResult.flip(0,15)": "0000000000000000000000010010110100111111000000011000000000010011", "S.@BitwiseorResult.flip(1)": "0000000000000000000000010010110100111111000000011111111111101100", "S.@BitwiseorResult.get(1)": true, "S.@BitwiseorResult.set(0,false)": "0000000000000000000000010010110100111111000000011111111111101110"}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@BitwiseorResult": "0000000000000000000000010010110100111111000000011111111111101111"}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@BitwiseorResult.cardinality()": 27}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@BitwiseorResult.get(1)": true}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@BitwiseorResult.set(0,false)": "0000000000000000000000010010110100111111000000011111111111101110"}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@BitwiseorResult.flip(1)": "0000000000000000000000010010110100111111000000011111111111101101"}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@BitwiseorResult.flip(0,15)": "0000000000000000000000010010110100111111000000011000000000010000"}, "v_id": "10995116278353", "v_type": "tupPerson"}]
 @@sumUint:1
 @@BitwiseorResult1:"0000000000000000000000010010110100111111000000011111111111101111"
 

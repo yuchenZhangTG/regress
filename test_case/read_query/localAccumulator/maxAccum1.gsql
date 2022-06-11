@@ -1,6 +1,6 @@
 #######################################################################
-# Target: (Positive) test sample local sumAccum
-# Description: test local sumAccum with different values (int, double, string)
+# Target: (Positive) test sample local MaxAccum
+# Description: test local maxAccum with different values (int, double, string)
 #            SYNTAX v2 not supported yet
 #            Sample results are random, only check the size of the results
 # Designer: Darren Wang

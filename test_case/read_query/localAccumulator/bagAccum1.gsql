@@ -1,0 +1,53 @@
+#######################################################################
+# Target: (Positive) test sample local bagAccum
+# Description: test local bagAccum with different values (int, double, string)
+#            SYNTAX v2 not supported yet
+#            Sample results are random, only check the size of the results
+# Designer: Darren Wang
+# Date: 2022-06-06
+# Doc: https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_bagaccum
+########################################################################
+
+CREATE OR REPLACE QUERY localAccum_bagAccum101 (DATETIME date, DATETIME date2) {
+  #The element type can be any base type, tuple, or STRING COMPRESS.
+  BagAccum<UINT>     @bagDefault;
+  BagAccum<VERTEX>   @bagVertex;
+  BagAccum<INT>      @bagInt;
+  BagAccum<UINT>     @bagUint;
+  BagAccum<DOUBLE>   @bagDouble;
+  BagAccum<DATETIME> @bagDateime;
+  BagAccum<TUP>      @bagTup;
+  BagAccum<TUP2>     @bagTup2;
+
+  BagAccum<UINT> @@globalDefault;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
+     ACCUM
+      s.@bagVertex += s,
+      s.@bagInt += s.creationEpoch,
+      s.@bagInt += 9999,
+      s.@bagInt += 9999, # //Bag accums can store duplicates
+      s.@bagUint += s.creationEpoch,
+      s.@bagDouble += s.creationEpoch * 1.0 / 21,
+      s.@bagDateime += s.creationDate,
+      s.@bagTup += s.tup,
+      s.@bagTup2 += s.tup2
+    POST-ACCUM (s)
+      s.@bagInt.remove( 9999 ),
+      s.@bagTup2.clear(),
+      @@globalDefault += s.@bagDefault;
+
+  PRINT @@globalDefault;
+  PRINT S [S.@bagVertex];
+  PRINT S [S.@bagInt];
+  PRINT S [S.@bagInt.size()];
+  PRINT S [S.@bagInt.contains(S.creationEpoch)];
+  PRINT S [S.@bagUint];
+  PRINT S [S.@bagDouble];
+  PRINT S [S.@bagDateime];
+  PRINT S [S.@bagTup];
+  PRINT S [S.@bagTup2];
+  PRINT S [S.@bagTup2.size()];
+
+}

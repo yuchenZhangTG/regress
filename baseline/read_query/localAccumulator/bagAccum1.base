@@ -1,0 +1,13 @@
+RUN QUERY localAccum_bagAccum101("2011-01-01", "2011-01-02")
+@@globalDefault:[]
+S:[{"attributes": {"S.@bagVertex": ["10995116278353"]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagInt": [9999, 1292796414592]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagInt.size()": 2}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagInt.contains(S.creationEpoch)": true}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagUint": [1292796414592]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagDouble": [61561730000.0]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagDateime": ["2010-12-19 22:06:54"]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagTup": [{"d": 10995116278353, "dt": "2010-12-19 22:06:54", "i": 593}]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagTup2": []}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@bagTup2.size()": 0}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+
