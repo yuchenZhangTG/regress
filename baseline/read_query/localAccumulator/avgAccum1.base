@@ -1,6 +1,0 @@
-RUN QUERY AccumClause_avgAccum101("2011-01-01", "2011-01-03")
-@@sumUint:67
-@@avgInt:1293942000000.0
-@@avgFloat:1293.9415
-@@avgDouble:61616260000.0
-

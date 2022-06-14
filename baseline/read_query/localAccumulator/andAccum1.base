@@ -1,6 +1,0 @@
-RUN QUERY AccumClause_andAccum101("2011-01-01", "2011-01-03")
-@@sumUint:67
-@@andResult:false
-@@andResult1:true
-@@andResult2:true
-

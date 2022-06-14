@@ -1,50 +1,52 @@
 #######################################################################
-# Target: (Positive) test sample local mapAccum
-# Description: test local mapAccum with different values (int, double, string)
+# Target: (Positive) test sample local groupByAccum
+# Description: test local groupByAccum with different values, nasted accums
 #            SYNTAX v2 not supported yet
 #            Sample results are random, only check the size of the results
 # Designer: Darren Wang
 # Date: 2022-06-06
 # Doc: https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_mapaccum
-#           Map(Key, Value)
-#           Keys can be INT or STRING only
 ########################################################################
 
 CREATE OR REPLACE QUERY localAccum_groupByAccum101 (DATETIME date, DATETIME date2) {
+  SumAccum<UINT> @@sumResult;
 
-    SumAccum<UINT> @@sumResult;
+  GroupByAccum<UINT a, MaxAccum<INT> max_int> @GroupByDefault;
+  GroupByAccum<STRING str, INT id_num, MaxAccum<INT> max_int > @groupByAccum;
+  GroupByAccum<STRING str, MapAccum<VERTEX<tupPerson>, DATETIME> person> @groupByAccum1;
+  GroupByAccum<STRING str, DOUBLE id_num, MaxAccum<INT> max_int > @groupByAccum2;
+  #Nested GroupByAccum
+  GroupByAccum<STRING str, GroupByAccum<STRING str, INT id_num, MaxAccum<INT> max_int > personGroup> @groupByAccum3;
+  GroupByAccum<STRING str, SetAccum<TUP> personTuple> @groupByAccum4;
 
-    MapAccum<STRING, INT> @mapAccum;
-    MapAccum<INT, STRING> @mapAccum1;
-    MapAccum<INT, STRING> @mapAccum2;
-    MapAccum<STRING, INT> @mapAccum3;
-    MapAccum<STRING, MapAccum<INT, STRING>> @nested_mapAccum;
+  GroupByAccum<UINT a, MaxAccum<INT> max_int> @@globalDefault;
+
 
   S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
     WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
     ACCUM
       @@sumResult += 1,
-      s.@mapAccum  += (t.title -> t.id),
-      s.@mapAccum1 += (t.id -> t.title),
-      s.@mapAccum2 += (t.id -> t.title),
-      s.@mapAccum3 += ("Title String 99999" -> 99999),
-      s.@nested_mapAccum += ( t.title -> (s.creationEpoch -> t.title ) )
+      s.@groupByAccum  += (t.title, t.id -> s.creationEpoch),
+      s.@groupByAccum1 += (t.title -> (s -> s.creationDate)),
+      s.@groupByAccum2  += (t.title, t.id * 1.0 / 21.4 -> s.creationEpoch),
+      s.@groupByAccum3 += (t.title -> s.@groupByAccum),
+      s.@groupByAccum4 += (t.title -> s.tup)
     POST-ACCUM(s)
-      s.@mapAccum3.clear();
+      @@globalDefault += s.@GroupByDefault,
+      s.@groupByAccum1.remove("Wall of Eduardo Rodriguez"),
+      s.@groupByAccum1.clear();
 
-    PRINT S [S.@mapAccum.size(), S.@mapAccum];
-    PRINT S [S.@mapAccum1];
-    PRINT S [S.@mapAccum2];
-    PRINT S [S.@mapAccum3];
-    PRINT S [S.@nested_mapAccum];
 
-    #test functions
-    PRINT S [S.@mapAccum.size()];
-    PRINT S [S.@mapAccum.containsKey("Wall of Eduardo Rodriguez")];
-    PRINT S [S.@mapAccum.get("Wall of Eduardo Rodriguez")];
-    #.removeKey function not working
-    #PRINT S [S.@mapAccum.removeKey("Wall of Eduardo Rodriguez")];
 
-  PRINT @@sumResult;
-
+PRINT S [S.@groupByAccum];
+PRINT S [S.@groupByAccum1];
+PRINT S [S.@groupByAccum2];
+PRINT S [S.@groupByAccum3];
+PRINT S [S.@groupByAccum4.size(), S.@groupByAccum4];
+#testing functions
+PRINT S [S.@groupByAccum4.size()];
+PRINT S [S.@groupByAccum4.get("Wall of Eduardo Rodriguez")];
+PRINT S [S.@groupByAccum4.containsKey("Wall of Eduardo Rodriguez")];
+PRINT @@globalDefault;
+PRINT @@sumResult;
 }

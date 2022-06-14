@@ -1,0 +1,11 @@
+RUN QUERY localAccum_mapAccum101("2011-01-01", "2011-01-02")
+S:[{"attributes": {"S.@mapAccum": {"Wall of Eduardo Rodriguez": 206158442196}, "S.@mapAccum.size()": 1}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@mapAccum1": {"206158442196": "Wall of Eduardo Rodriguez"}}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@mapAccum2": {"206158442196": "Wall of Eduardo Rodriguez"}}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@mapAccum3": {}}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@nested_mapAccum": {"Wall of Eduardo Rodriguez": {"1292796414592": "Wall of Eduardo Rodriguez"}}}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@mapAccum.size()": 1}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@mapAccum.containsKey(\"Wall of Eduardo Rodriguez\")": true}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@mapAccum.get(\"Wall of Eduardo Rodriguez\")": 206158442196}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+@@sumResult:1
+

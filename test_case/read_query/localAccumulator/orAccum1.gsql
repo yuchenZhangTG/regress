@@ -9,10 +9,12 @@
 ########################################################################
 CREATE OR REPLACE QUERY localAccum_orAccum101 (DATETIME date, DATETIME date2) {
   SumAccum<UINT>   @@sumUint;
+  ListAccum<STRING> @@result;
 
+  OrAccum @@alternator;
   OrAccum @orResult; //default value = FALSE
-  OrAccum @orResult1;
-  OrAccum @orResult2;
+  OrAccum @orResult1 = false;
+  OrAccum @orResult2 = true;
   OrAccum @orResult3;
 
   S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
@@ -25,15 +27,27 @@ CREATE OR REPLACE QUERY localAccum_orAccum101 (DATETIME date, DATETIME date2) {
 
     #If result is even += True, if odd += False
     POST-ACCUM (s)
-    s.@orResult1 += TRUE, // F or F == F
-    s.@orResult2 += FALSE, // F or T == T
-    IF (@@sumUint%2) == 0 THEN
-      s.@orResult += TRUE
-    ELSE
-      s.@orResult += FALSE
+      s.@orResult1 += ((s.@orResult1 OR @@alternator) AND (NOT (s.@orResult1 OR @@alternator))),
+      s.@orResult2 += ((s.@orResult2 OR @@alternator) AND (NOT (s.@orResult2 OR @@alternator))),
+      IF (@@alternator == true) then
+        @@alternator += false
+      ELSE
+        @@alternator += true
+      END,
+      IF (s.@orResult1 == true) then
+        @@result += "T"
+      ELSE
+        @@result += "F"
+      END,
+      IF (s.@orResult2 == true) then
+        @@result += "T"
+      ELSE
+        @@result += "F"
       END;
 
-    PRINT S [S.@orResult, S.@orResult1, S.@orResult2];
-
+  PRINT S [S.@orResult1];
+  PRINT S [S.@orResult2];
+  PRINT @@result;
   PRINT @@sumUint;
-}
+  PRINT @@alternator;
+}}
