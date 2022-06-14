@@ -50,4 +50,4 @@ CREATE OR REPLACE QUERY localAccum_orAccum101 (DATETIME date, DATETIME date2) {
   PRINT @@result;
   PRINT @@sumUint;
   PRINT @@alternator;
-}}
+}
