@@ -14,7 +14,10 @@ CREATE OR REPLACE QUERY localAccum_BitwiseOrAccum101 (DATETIME date, DATETIME da
 
   BitwiseOrAccum @BitwiseorResult; // default value = 64-bits of 1 = -1 INT
   BitwiseOrAccum @BitwiseorResult1;
+  BitwiseOrAccum @BitwiseorResult2;
+  BitwiseOrAccum @defaultBitwiseor;
   BitwiseOrAccum @@BitwiseorResult1;
+  BitwiseOrAccum @@defaultBitwiseor;
 
   S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
     WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
@@ -24,26 +27,30 @@ CREATE OR REPLACE QUERY localAccum_BitwiseOrAccum101 (DATETIME date, DATETIME da
       s.@BitwiseorResult += 9998,
       s.@BitwiseorResult1 += e.creationEpoch,
       s.@BitwiseorResult1 += 9998,
+      s.@BitwiseorResult2 += e.creationEpoch,
+      s.@BitwiseorResult2 += 9998,
       #Use a global Accun to verify result
       @@BitwiseorResult1 += e.creationEpoch,
-      @@BitwiseorResult1 += 9998;
+      @@BitwiseorResult1 += 9998
       #xor not functioning, [GTEST_IL]Failed query during compilation:
-      #POST-ACCUM(s)
-      #s.@BitwiseorResult1.xor(s.@BitwiseorResult);
-
-
-      #Test all functions
-    PRINT S [S.@BitwiseorResult];
-    PRINT S [S.@BitwiseorResult.cardinality()];
-    PRINT S [S.@BitwiseorResult.get(1)];
-    PRINT S [S.@BitwiseorResult.set(0,FALSE)];
-    #flip result in udf and single/dist are different. 0_ and _0
-    PRINT S [S.@BitwiseorResult.flip(1)];
-    PRINT S [S.@BitwiseorResult.flip(0 , 15)];
-    #PRINT S [S.@BitwiseorResult.xor(S.@BitwiseorResult1)];
+      POST-ACCUM(s)
+      s.@BitwiseorResult1.flip(1),
+      s.@BitwiseorResult2.flip(0 , 15),
+      @@defaultBitwiseor += s.@defaultBitwiseor;
 
   PRINT @@sumUint;
-  PRINT @@BitwiseorResult1;
 
+  #Test all functions
+  PRINT S [S.@BitwiseorResult];
+  PRINT S [S.@BitwiseorResult.cardinality()];
+  PRINT S [S.@BitwiseorResult.get(1)];
+  PRINT S [S.@BitwiseorResult.set(0,FALSE)];
+  #flip result in udf and single/dist are different if use inside PRINT[]. 0_ and _0
+  PRINT S [S.@BitwiseorResult1];
+  PRINT S [S.@BitwiseorResult2];
+  #PRINT S [S.@BitwiseorResult.xor(S.@BitwiseorResult1)];
+
+  PRINT @@BitwiseorResult1;
+  PRINT @@defaultBitwiseor;
 
 }
