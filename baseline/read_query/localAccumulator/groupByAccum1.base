@@ -4,6 +4,7 @@ S:[{"attributes": {"S.@groupByAccum1": []}, "v_id": "10995116278353", "v_type": 
 S:[{"attributes": {"S.@groupByAccum2": [{"id_num": 9633572000.0, "max_int": 1292796414592, "str": "Wall of Eduardo Rodriguez"}]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
 S:[{"attributes": {"S.@groupByAccum3": [{"personGroup": [], "str": "Wall of Eduardo Rodriguez"}]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
 S:[{"attributes": {"S.@groupByAccum4": [{"personTuple": [{"d": 10995116278353, "dt": "2010-12-19 22:06:54", "i": 593}], "str": "Wall of Eduardo Rodriguez"}], "S.@groupByAccum4.size()": 1}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@groupByAccum5": [{"nestedHeapTup": [{"d": 10995116278353, "dt": "2010-12-19 22:06:54", "i": 593}], "str": "Wall of Eduardo Rodriguez"}]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
 S:[{"attributes": {"S.@groupByAccum4.size()": 1}, "v_id": "10995116278353", "v_type": "tupPerson"}]
 S:[{"attributes": {"S.@groupByAccum4.get(\"Wall of Eduardo Rodriguez\")": {"personTuple": [{"d": 10995116278353, "dt": "2010-12-19 22:06:54", "i": 593}]}}, "v_id": "10995116278353", "v_type": "tupPerson"}]
 S:[{"attributes": {"S.@groupByAccum4.containsKey(\"Wall of Eduardo Rodriguez\")": true}, "v_id": "10995116278353", "v_type": "tupPerson"}]
