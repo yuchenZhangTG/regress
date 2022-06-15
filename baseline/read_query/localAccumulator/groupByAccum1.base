@@ -10,3 +10,6 @@ S:[{"attributes": {"S.@groupByAccum4.containsKey(\"Wall of Eduardo Rodriguez\")"
 @@globalDefault:[]
 @@sumResult:1
 
+RUN QUERY localAccum_groupByAccum102()
+@@group4:[{"age": 29, "h": [{"age": 19, "id": 2, "name": "bbb"}, {"age": 20, "id": 3, "name": "ccc"}]}]
+
