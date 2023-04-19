@@ -1,0 +1,34 @@
+# https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_bitwiseOrorOrororaccum_bitwiseoraccum
+# BitwiseOrAccum for different data types in edge block
+CREATE OR REPLACE QUERY AccumClause_BitwiseOrAccum101 (DATETIME date, DATETIME date2) {
+  SumAccum<UINT>   @@sumUint;
+
+  BitwiseOrAccum @@BitwiseorResult; // default value = 64-bits of 1 = -1 INT
+  BitwiseOrAccum @@BitwiseorResult1;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date or e.creationDate < date2
+    ACCUM
+      @@sumUint += e.creationEpoch
+
+    POST-ACCUM (s)
+    @@BitwiseorResult += @@sumUint,
+    @@BitwiseorResult += @@sumUint,
+    @@BitwiseorResult1 += 9999,
+    @@BitwiseorResult1 += 9998;
+
+  PRINT @@sumUint;
+  PRINT @@BitwiseorResult;
+  PRINT @@BitwiseorResult1;
+
+  # Testing methods of BitwiseOrAccum
+  PRINT @@BitwiseorResult1.cardinality();
+  PRINT @@BitwiseorResult1.get(1);
+  @@BitwiseorResult1.set(0,TRUE);
+  PRINT @@BitwiseorResult1;
+  @@BitwiseorResult1.flip(1);
+  PRINT @@BitwiseorResult1;
+  @@BitwiseorResult1.flip(0 , 15);
+  PRINT @@BitwiseorResult1 ;
+
+}

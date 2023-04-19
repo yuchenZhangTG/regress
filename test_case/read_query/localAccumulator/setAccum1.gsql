@@ -1,0 +1,51 @@
+#######################################################################
+# Target: (Positive) test sample local setAccum
+# Description: test local setAccum with different values (int, double, string)
+#            SYNTAX v2 not supported yet
+#            Sample results are random, only check the size of the results
+# Designer: Darren Wang
+# Date: 2022-06-06
+# Doc: https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_setaccum
+########################################################################
+
+CREATE OR REPLACE QUERY localAccum_setAccum101 (DATETIME date, DATETIME date2) {
+  SetAccum<UINT>   @setDefault;
+  SetAccum<VERTEX> @setVertex;
+  SetAccum<INT>    @setInt;
+  SetAccum<UINT>   @setUint;
+  SetAccum<DOUBLE> @setDouble;
+  SetAccum<DATETIME> @setDateime;
+  SetAccum<TUP>   @setTup;
+  SetAccum<TUP2>  @setTup2;
+
+  SetAccum<UINT> @@globalDefault;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
+     ACCUM
+      s.@setVertex += s,
+      s.@setInt += s.creationEpoch,
+      s.@setInt += s.creationEpoch, # Sets do not store duplicates
+      s.@setInt += 9999,
+      s.@setUint += s.creationEpoch,
+      s.@setDouble += s.creationEpoch * 1.0 / 21,
+      s.@setDateime += s.creationDate,
+      s.@setTup += s.tup,
+      s.@setTup2 += s.tup2
+    POST-ACCUM (s)
+      s.@setInt.remove( 9999 ),
+      s.@setInt.clear(),
+      @@globalDefault += s.@setDefault;
+
+  PRINT @@globalDefault;
+  PRINT S [S.@setVertex];
+  PRINT S [S.@setInt];
+  PRINT S [S.@setUint];
+  PRINT S [S.@setDouble];
+  PRINT S [S.@setDateime];
+  PRINT S [S.@setTup];
+  PRINT S [S.@setTup2];
+  PRINT S [S.@setTup2.size()];
+  PRINT S [S.@setInt.contains( 1292796414592 )];
+
+}

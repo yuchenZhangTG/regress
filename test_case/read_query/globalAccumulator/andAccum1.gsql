@@ -5,11 +5,16 @@ CREATE OR REPLACE QUERY AccumClause_andAccum101 (DATETIME date, DATETIME date2) 
 
   AndAccum @@andResult; //default value = TRUE
   AndAccum @@andResult1;
+  AndAccum @@andResult2;
+  AndAccum @@andResult3;
 
   S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
     WHERE e.creationDate > date AND e.creationDate < date2
     ACCUM
       @@sumUint += 1
+
+      #Negative test
+      #@@andResult3 += t.title,
 
     #If result is even += True, if odd += False
     POST-ACCUM (s)
@@ -18,9 +23,11 @@ CREATE OR REPLACE QUERY AccumClause_andAccum101 (DATETIME date, DATETIME date2) 
     ELSE
       @@andResult += FALSE
       END;
-    @@andResult1 += TRUE ;
+    @@andResult1 += TRUE ; // T and T = T
+    @@andResult2 += TRUE ; // T and F = F
 
   PRINT @@sumUint;
   PRINT @@andResult;
   PRINT @@andResult1;
+  PRINT @@andResult2;
 }

@@ -1,0 +1,12 @@
+RUN QUERY localAccum_setAccum101("2011-01-01", "2011-01-02")
+@@globalDefault:[]
+S:[{"attributes": {"S.@setVertex": ["10995116278353"]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@setInt": []}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@setUint": [1292796414592]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@setDouble": [61561730000.0]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@setDateime": ["2010-12-19 22:06:54"]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@setTup": [{"d": 10995116278353, "dt": "2010-12-19 22:06:54", "i": 593}]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@setTup2": [{"i": 10995116278353, "i2": 10995116278353, "s": "Otto"}]}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@setTup2.size()": 1}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@setInt.contains(1292796414592)": false}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+

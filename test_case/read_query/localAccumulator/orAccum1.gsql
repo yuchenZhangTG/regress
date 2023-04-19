@@ -1,0 +1,53 @@
+#######################################################################
+# Target: (Positive) test sample local orAccum
+# Description: test local orAccum with multiple assign
+#            SYNTAX v2 not supported yet
+#            Sample results are random, only check the size of the results
+# Designer: Darren Wang
+# Date: 2022-06-06
+# Doc: https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_andaccum_oraccum
+########################################################################
+CREATE OR REPLACE QUERY localAccum_orAccum101 (DATETIME date, DATETIME date2) {
+  SumAccum<UINT>   @@sumUint;
+  ListAccum<STRING> @@result;
+
+  OrAccum @@alternator;
+  OrAccum @orResult; //default value = FALSE
+  OrAccum @orResult1 = false;
+  OrAccum @orResult2 = true;
+  OrAccum @orResult3;
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
+    ACCUM
+      @@sumUint += 1
+
+      #Negative test, no type can be inferred for @@orResult3 += t.title
+      #s.@orResult3 += t.title
+
+    #If result is even += True, if odd += False
+    POST-ACCUM (s)
+      s.@orResult1 += ((s.@orResult1 OR @@alternator) AND (NOT (s.@orResult1 OR @@alternator))),
+      s.@orResult2 += ((s.@orResult2 OR @@alternator) AND (NOT (s.@orResult2 OR @@alternator))),
+      IF (@@alternator == true) then
+        @@alternator += false
+      ELSE
+        @@alternator += true
+      END,
+      IF (s.@orResult1 == true) then
+        @@result += "T"
+      ELSE
+        @@result += "F"
+      END,
+      IF (s.@orResult2 == true) then
+        @@result += "T"
+      ELSE
+        @@result += "F"
+      END;
+
+  PRINT S [S.@orResult1];
+  PRINT S [S.@orResult2];
+  PRINT @@result;
+  PRINT @@sumUint;
+  PRINT @@alternator;
+}

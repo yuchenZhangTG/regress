@@ -1,0 +1,7 @@
+RUN QUERY localAccum_orAccum101("2011-01-01", "2011-01-03")
+S:[{"attributes": {"S.@orResult1": false}, "v_id": "10995116278353", "v_type": "tupPerson"}, {"attributes": {"S.@orResult1": false}, "v_id": "10995116279390", "v_type": "tupPerson"}]
+S:[{"attributes": {"S.@orResult2": true}, "v_id": "10995116278353", "v_type": "tupPerson"}, {"attributes": {"S.@orResult2": true}, "v_id": "10995116279390", "v_type": "tupPerson"}]
+@@result:["F", "F", "T", "T"]
+@@sumUint:2
+@@alternator:true
+

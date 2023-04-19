@@ -1,0 +1,5 @@
+RUN QUERY localAccum_sumAccum101("2011-01-01", "2011-01-02")
+S:[{"attributes": {"S.@sumDouble": 61611540000.0, "S.@sumFloat": 1.2938, "S.@sumInt": 1293842243553, "S.@sumString": "Wall of Eduardo Rodriguez", "S.@sumUint": 1}, "v_id": "10995116278353", "v_type": "tupPerson"}]
+@@globalSum:1
+@@sumResult:1
+

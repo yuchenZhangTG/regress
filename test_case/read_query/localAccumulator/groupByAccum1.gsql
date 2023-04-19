@@ -1,0 +1,81 @@
+#######################################################################
+# Target: (Positive) test sample local groupByAccum
+# Description: test local groupByAccum with different values, nasted accums
+#            SYNTAX v2 not supported yet
+#            Sample results are random, only check the size of the results
+# Designer: Darren Wang
+# Date: 2022-06-06
+# Doc: https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_mapaccum
+########################################################################
+
+CREATE OR REPLACE QUERY localAccum_groupByAccum101 (DATETIME date, DATETIME date2) {
+  Typedef HeapAccum <TUP> (2, i desc, d desc, dt asc) myHeap;
+  SumAccum<UINT> @@sumResult;
+
+  GroupByAccum<UINT a, MaxAccum<INT> max_int> @GroupByDefault;
+  GroupByAccum<STRING str, INT id_num, MaxAccum<INT> max_int > @groupByAccum;
+  GroupByAccum<STRING str, MapAccum<VERTEX<tupPerson>, DATETIME> person> @groupByAccum1;
+  GroupByAccum<STRING str, DOUBLE id_num, MaxAccum<INT> max_int > @groupByAccum2;
+  #Nested GroupByAccum
+  GroupByAccum<STRING str, GroupByAccum<STRING str, INT id_num, MaxAccum<INT> max_int > personGroup> @groupByAccum3;
+  GroupByAccum<STRING str, SetAccum<TUP> personTuple> @groupByAccum4;
+  GroupByAccum<STRING str, myHeap nestedHeapTup> @groupByAccum5;
+
+  GroupByAccum<UINT a, MaxAccum<INT> max_int> @@globalDefault;
+
+
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
+    ACCUM
+      @@sumResult += 1,
+      s.@groupByAccum  += (t.title, t.id -> s.creationEpoch),
+      s.@groupByAccum1 += (t.title -> (s -> s.creationDate)),
+      s.@groupByAccum2  += (t.title, t.id * 1.0 / 21.4 -> s.creationEpoch),
+      s.@groupByAccum3 += (t.title -> s.@groupByAccum),
+      s.@groupByAccum4 += (t.title -> s.tup),
+      s.@groupByAccum5 += (t.title -> s.tup)
+    POST-ACCUM(s)
+      @@globalDefault += s.@GroupByDefault,
+      s.@groupByAccum1.remove("Wall of Eduardo Rodriguez"),
+      s.@groupByAccum1.clear();
+
+
+
+PRINT S [S.@groupByAccum];
+PRINT S [S.@groupByAccum1];
+PRINT S [S.@groupByAccum2];
+PRINT S [S.@groupByAccum3];
+PRINT S [S.@groupByAccum4.size(), S.@groupByAccum4];
+PRINT S [S.@groupByAccum5];
+#testing functions
+PRINT S [S.@groupByAccum4.size()];
+PRINT S [S.@groupByAccum4.get("Wall of Eduardo Rodriguez")];
+PRINT S [S.@groupByAccum4.containsKey("Wall of Eduardo Rodriguez")];
+PRINT @@globalDefault;
+PRINT @@sumResult;
+}
+
+#######################################################################
+# Target: (Negative) test case for GLE-2489
+# Description: GroupByAccum with heapAccum as value doesn't return correct result
+#            Since this problem only occured under interpret mode, result here is correct
+#            SYNTAX v2 not supported yet
+#            Sample results are random, only check the size of the results
+# Designer: Darren Wang
+# Date: 2022-06-06
+# Jira: https://graphsql.atlassian.net/browse/GLE-2489
+########################################################################
+CREATE OR REPLACE QUERY localAccum_groupByAccum102 () {
+  ##declare HeapAccum type and tuple used in the HeapAccum
+  Typedef tuple <id int, name string, age int> myTuple;
+  Typedef HeapAccum <myTuple> (2, name desc, age desc, id asc) myHeap;
+
+  GroupByAccum<INT age, myHeap h> @@group4;
+
+ ## HeapAccum inside GroupByAccum
+  @@group4 += (29->myTuple(1,"aaa", 18));
+  @@group4 += (29->myTuple(2,"bbb", 19));
+  @@group4 += (29->myTuple(3,"ccc", 20));
+  PRINT @@group4;
+
+}

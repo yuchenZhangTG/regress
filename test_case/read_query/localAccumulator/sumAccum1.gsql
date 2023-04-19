@@ -1,0 +1,37 @@
+#######################################################################
+# Target: (Positive) test sample local sumAccum
+# Description: test local sumAccum with multiple assign with different values (int, double, string)
+#            SYNTAX v2 not supported yet
+#            Sample results are random, only check the size of the results
+# Designer: Darren Wang
+# Date: 2022-06-06
+# Doc: https://docs.tigergraph.com/gsql-ref/current/querying/accumulators#_sumaccum
+########################################################################
+
+CREATE OR REPLACE QUERY localAccum_sumAccum101(DATETIME date, DATETIME date2) {
+  SumAccum<UINT>   @sumUint;
+  SumAccum<INT>    @sumInt;
+  SumAccum<FLOAT>  @sumFloat;
+  SumAccum<DOUBLE> @sumDouble;
+  SumAccum<STRING> @sumString;
+
+  SumAccum<UINT> @@sumResult;
+  SumAccum<UINT> @@globalSum;
+
+  #threads = SELECT p FROM Post:p WHERE p.creationDate BETWEEN startEpoch AND endEpoch;
+  S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
+    WHERE e.creationDate > date AND e.creationDate < date2 AND t.title =="Wall of Eduardo Rodriguez"
+    ACCUM
+      s.@sumUint += 1,
+      s.@sumInt += e.creationEpoch,
+      s.@sumFloat += e.creationEpoch * 1.0 / 1000000000000,
+      s.@sumDouble += e.creationEpoch * 1.0 / 21,
+      s.@sumString += t.title,
+      @@globalSum += 1
+    #PRINT s.@threadCount;
+        POST-ACCUM(s) @@sumResult += s.@sumUint;
+        PRINT S [S.@sumUint, S.@sumInt, S.@sumFloat, S.@sumDouble, S.@sumString];
+
+  PRINT @@globalSum;
+  PRINT @@sumResult;
+}

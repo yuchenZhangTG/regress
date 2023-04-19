@@ -5,11 +5,16 @@ CREATE OR REPLACE QUERY AccumClause_orAccum101 (DATETIME date, DATETIME date2) {
 
   OrAccum @@orResult; //default value = FALSE
   OrAccum @@orResult1;
+  OrAccum @@orResult2;
+  OrAccum @@orResult3;
 
   S = SELECT s FROM tupPerson:s -(<TUP_MEMBER:e)- _:t
     WHERE e.creationDate > date AND e.creationDate < date2
     ACCUM
       @@sumUint += 1
+
+      #Negative test, no type can be inferred for @@orResult3 += t.title
+      #@@orResult3 += t.title
 
     #If result is even += True, if odd += False
     POST-ACCUM (s)
@@ -18,9 +23,12 @@ CREATE OR REPLACE QUERY AccumClause_orAccum101 (DATETIME date, DATETIME date2) {
     ELSE
       @@orResult += FALSE
       END;
-    @@orResult1 += TRUE ;
+    @@orResult1 += TRUE ; // F or F == F
+    @@orResult2 += FALSE; // F or T == T
 
   PRINT @@sumUint;
   PRINT @@orResult;
   PRINT @@orResult1;
+  PRINT @@orResult2;
+  PRINT @@orResult3;
 }
